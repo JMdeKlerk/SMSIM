@@ -1,30 +1,22 @@
 ﻿using System;
+using System.Net;
+using System.Net.Sockets;
 using Eneter.Messaging.EndPoints.TypedMessages;
 using Eneter.Messaging.MessagingSystems.MessagingSystemBase;
 using Eneter.Messaging.MessagingSystems.TcpMessagingSystem;
-using System.Net;
-using System.Net.Sockets;
+using Eneter.Messaging.EndPoints.StringMessages;
 
 namespace ServiceExample
 {
-    public class MyRequest
-    {
-        public string Text { get; set; }
-    }
-    public class MyResponse
-    {
-        public int Length { get; set; }
-    }
-
     class Program
     {
-        private static IDuplexTypedMessageReceiver<MyResponse, MyRequest> myReceiver;
+        private static IDuplexStringMessageReceiver myReceiver;
 
         static void Main(string[] args)
         {
-            IDuplexTypedMessagesFactory aReceiverFactory = new DuplexTypedMessagesFactory();
-            myReceiver = aReceiverFactory.CreateDuplexTypedMessageReceiver<MyResponse, MyRequest>();
-            myReceiver.MessageReceived += OnMessageReceived;
+            IDuplexStringMessagesFactory aReceiverFactory = new DuplexStringMessagesFactory();
+            myReceiver = aReceiverFactory.CreateDuplexStringMessageReceiver();
+            myReceiver.RequestReceived += OnRequestReceived;
             IMessagingSystemFactory aMessaging = new TcpMessagingSystemFactory();
             IDuplexInputChannel anInputChannel = aMessaging.CreateDuplexInputChannel("tcp://" + LocalIPAddress() + ":8060/");
             myReceiver.AttachDuplexInputChannel(anInputChannel);
@@ -33,12 +25,10 @@ namespace ServiceExample
             myReceiver.DetachDuplexInputChannel();
         }
 
-        private static void OnMessageReceived(object sender, TypedRequestReceivedEventArgs<MyRequest> e)
+        private static void OnRequestReceived(object sender, StringRequestReceivedEventArgs e)
         {
-            Console.WriteLine("Received: " + e.RequestMessage.Text);
-            MyResponse aResponse = new MyResponse();
-            aResponse.Length = e.RequestMessage.Text.Length;
-            myReceiver.SendResponseMessage(e.ResponseReceiverId, aResponse);
+            Console.WriteLine(e.RequestMessage);
+            myReceiver.SendResponseMessage(e.ResponseReceiverId, "Thanks for " + e.RequestMessage);
         }
 
         private static string LocalIPAddress()

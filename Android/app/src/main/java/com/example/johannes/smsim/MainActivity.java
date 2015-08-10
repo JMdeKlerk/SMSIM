@@ -8,24 +8,16 @@ import android.view.MenuItem;
 import android.view.View;
 
 import eneter.messaging.diagnostic.EneterTrace;
-import eneter.messaging.endpoints.typedmessages.DuplexTypedMessagesFactory;
-import eneter.messaging.endpoints.typedmessages.IDuplexTypedMessageSender;
-import eneter.messaging.endpoints.typedmessages.IDuplexTypedMessagesFactory;
-import eneter.messaging.endpoints.typedmessages.TypedResponseReceivedEventArgs;
+import eneter.messaging.endpoints.stringmessages.DuplexStringMessagesFactory;
+import eneter.messaging.endpoints.stringmessages.IDuplexStringMessageSender;
+import eneter.messaging.endpoints.stringmessages.IDuplexStringMessagesFactory;
+import eneter.messaging.endpoints.stringmessages.StringResponseReceivedEventArgs;
 import eneter.messaging.messagingsystems.messagingsystembase.IDuplexOutputChannel;
 import eneter.messaging.messagingsystems.messagingsystembase.IMessagingSystemFactory;
 import eneter.messaging.messagingsystems.tcpmessagingsystem.TcpMessagingSystemFactory;
 import eneter.net.system.EventHandler;
 
 public class MainActivity extends AppCompatActivity {
-
-    public static class MyRequest {
-        public String Text;
-    }
-
-    public static class MyResponse {
-        public int Length;
-    }
 
     public void doMagic(View view) {
         Thread anOpenConnectionThread = new Thread(new Runnable() {
@@ -43,21 +35,19 @@ public class MainActivity extends AppCompatActivity {
 
     private void openConnection() throws Exception {
         Log.i("Log", "Trying magic...");
-        IDuplexTypedMessagesFactory aSenderFactory = new DuplexTypedMessagesFactory();
-        IDuplexTypedMessageSender<MyResponse, MyRequest> mySender = aSenderFactory.createDuplexTypedMessageSender(MyResponse.class, MyRequest.class);
-        mySender.responseReceived().subscribe(new EventHandler<TypedResponseReceivedEventArgs<MyResponse>>() {
+        IDuplexStringMessagesFactory factory = new DuplexStringMessagesFactory();
+        IDuplexStringMessageSender sender = factory.createDuplexStringMessageSender();
+        sender.responseReceived().subscribe(new EventHandler<StringResponseReceivedEventArgs>() {
             @Override
-            public void onEvent(Object o, TypedResponseReceivedEventArgs<MyResponse> myResponseTypedResponseReceivedEventArgs) {
+            public void onEvent(Object o, StringResponseReceivedEventArgs stringResponseReceivedEventArgs) {
                 Log.i("Log", "Response recieved, ignoring.");
             }
         });
-        IMessagingSystemFactory aMessaging = new TcpMessagingSystemFactory();
-        IDuplexOutputChannel anOutputChannel = aMessaging.createDuplexOutputChannel("tcp://192.168.178.39:8060/");
-        mySender.attachDuplexOutputChannel(anOutputChannel);
-        final MyRequest aRequestMsg = new MyRequest();
-        aRequestMsg.Text = "Hello world!";
+        IMessagingSystemFactory messenger = new TcpMessagingSystemFactory();
+        IDuplexOutputChannel output = messenger.createDuplexOutputChannel("tcp://192.168.178.39:8060/");
+        sender.attachDuplexOutputChannel(output);
         try {
-            mySender.sendRequestMessage(aRequestMsg);
+            sender.sendMessage("Hello world!");
         } catch (Exception err) {
             EneterTrace.error("Sending the message failed.", err);
         }
