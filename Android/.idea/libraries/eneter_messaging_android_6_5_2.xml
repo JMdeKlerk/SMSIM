@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="eneter-messaging-android-6.5.2">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/app/libs/eneter-messaging-android-6.5.2.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

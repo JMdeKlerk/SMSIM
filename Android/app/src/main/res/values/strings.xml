@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">SMSIM</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_android_net_communication_client">
+        AndroidNetCommunicationClientActivity
+    </string>
+</resources>
