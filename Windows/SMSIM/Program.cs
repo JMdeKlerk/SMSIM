@@ -20,7 +20,7 @@ namespace ServiceExample
             IMessagingSystemFactory aMessaging = new TcpMessagingSystemFactory();
             IDuplexInputChannel anInputChannel = aMessaging.CreateDuplexInputChannel("tcp://" + LocalIPAddress() + ":8060/");
             myReceiver.AttachDuplexInputChannel(anInputChannel);
-            Console.WriteLine("The service is running. To stop press enter.");
+            Console.WriteLine("Running. Addr = " + LocalIPAddress() + ":8060");
             Console.ReadLine();
             myReceiver.DetachDuplexInputChannel();
         }
@@ -28,7 +28,7 @@ namespace ServiceExample
         private static void OnRequestReceived(object sender, StringRequestReceivedEventArgs e)
         {
             Console.WriteLine(e.RequestMessage);
-            myReceiver.SendResponseMessage(e.ResponseReceiverId, "Thanks for " + e.RequestMessage);
+            myReceiver.SendResponseMessage(e.ResponseReceiverId, "Ack: " + e.RequestMessage);
         }
 
         private static string LocalIPAddress()

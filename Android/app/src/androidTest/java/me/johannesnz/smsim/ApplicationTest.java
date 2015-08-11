@@ -1,4 +1,4 @@
-package com.example.johannes.smsim;
+package me.johannesnz.smsim;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;
