@@ -1,37 +1,48 @@
 ﻿using System;
 using System.Net;
 using System.Net.Sockets;
-using Eneter.Messaging.EndPoints.TypedMessages;
+using System.Windows.Forms;
+
+using Eneter.Messaging.EndPoints.StringMessages;
 using Eneter.Messaging.MessagingSystems.MessagingSystemBase;
 using Eneter.Messaging.MessagingSystems.TcpMessagingSystem;
-using Eneter.Messaging.EndPoints.StringMessages;
 
-namespace ServiceExample
+
+namespace SMSIM
 {
-    class Program
+    public partial class SMSIM : Form
     {
-        private static IDuplexStringMessageReceiver myReceiver;
 
-        static void Main(string[] args)
+        private IDuplexStringMessageReceiver myReceiver;
+
+        public SMSIM()
+        {
+            InitializeComponent();
+        }
+
+        private void SMSIM_Load(object sender, EventArgs e)
         {
             IDuplexStringMessagesFactory aReceiverFactory = new DuplexStringMessagesFactory();
             myReceiver = aReceiverFactory.CreateDuplexStringMessageReceiver();
             myReceiver.RequestReceived += OnRequestReceived;
             IMessagingSystemFactory aMessaging = new TcpMessagingSystemFactory();
-            IDuplexInputChannel anInputChannel = aMessaging.CreateDuplexInputChannel("tcp://" + LocalIPAddress() + ":8060/");
+            String localIP = LocalIPAddress();
+            IDuplexInputChannel anInputChannel = aMessaging.CreateDuplexInputChannel("tcp://" + localIP + ":8060/");
             myReceiver.AttachDuplexInputChannel(anInputChannel);
-            Console.WriteLine("Running. Addr = " + LocalIPAddress() + ":8060");
-            Console.ReadLine();
-            myReceiver.DetachDuplexInputChannel();
+            ipAddress.Text = localIP + ":8060";
         }
-
-        private static void OnRequestReceived(object sender, StringRequestReceivedEventArgs e)
+        
+        private void OnRequestReceived(object sender, StringRequestReceivedEventArgs e)
         {
-            Console.WriteLine(e.RequestMessage);
+            String[] input = e.RequestMessage.Split(':');
+            if (input[0].Equals("Conn"))
+            {
+                deviceName.Invoke(new MethodInvoker(delegate { deviceName.Text = input[1]; }));
+            }
             myReceiver.SendResponseMessage(e.ResponseReceiverId, "Ack: " + e.RequestMessage);
         }
 
-        private static string LocalIPAddress()
+        private string LocalIPAddress()
         {
             IPHostEntry host;
             string localIP = "";
