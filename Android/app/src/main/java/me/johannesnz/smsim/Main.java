@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.ContactsContract;
 import android.telephony.SmsMessage;
+import android.util.Log;
 
 import eneter.messaging.endpoints.stringmessages.DuplexStringMessagesFactory;
 import eneter.messaging.endpoints.stringmessages.IDuplexStringMessageSender;
@@ -81,7 +82,7 @@ public class Main extends Service{
     EventHandler<StringResponseReceivedEventArgs> handler = new EventHandler<StringResponseReceivedEventArgs>() {
         @Override
         public void onEvent(Object o, StringResponseReceivedEventArgs response) {
-            if (response.getResponseMessage().equals("Ack: Conn")) {
+            if (response.getResponseMessage().startsWith("Ack: Conn")) {
                 Cursor phones = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
                 while (phones.moveToNext()) {
                     String name = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
