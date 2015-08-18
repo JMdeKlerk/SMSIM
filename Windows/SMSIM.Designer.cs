@@ -32,7 +32,7 @@
             this.deviceName = new System.Windows.Forms.TextBox();
             this.ipAddress = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.contacts = new System.Windows.Forms.ListView();
+            this.contacts = new System.Windows.Forms.ListBox();
             this.SuspendLayout();
             // 
             // label1
@@ -79,17 +79,13 @@
             // 
             // contacts
             // 
-            this.contacts.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.contacts.FormattingEnabled = true;
+            this.contacts.ImeMode = System.Windows.Forms.ImeMode.NoControl;
             this.contacts.Location = new System.Drawing.Point(12, 64);
             this.contacts.Name = "contacts";
-            this.contacts.Size = new System.Drawing.Size(230, 331);
-            this.contacts.Sorting = System.Windows.Forms.SortOrder.Ascending;
+            this.contacts.Size = new System.Drawing.Size(230, 329);
             this.contacts.TabIndex = 4;
-            this.contacts.UseCompatibleStateImageBehavior = false;
-            this.contacts.View = System.Windows.Forms.View.Tile;
-            this.contacts.ItemSelectionChanged += new System.Windows.Forms.ListViewItemSelectionChangedEventHandler(this.contacts_SelectionChanged);
+            this.contacts.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.contacts_doubleClick);
             // 
             // SMSIM
             // 
@@ -115,7 +111,7 @@
         private System.Windows.Forms.TextBox deviceName;
         private System.Windows.Forms.TextBox ipAddress;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.ListView contacts;
+        private System.Windows.Forms.ListBox contacts;
     }
 }
 

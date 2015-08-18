@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -22,7 +23,7 @@ import eneter.messaging.messagingsystems.messagingsystembase.IMessagingSystemFac
 import eneter.messaging.messagingsystems.tcpmessagingsystem.TcpMessagingSystemFactory;
 import eneter.net.system.EventHandler;
 
-public class Main extends Service{
+public class Main extends Service {
 
     private IDuplexStringMessageSender sender;
     private BroadcastReceiver messageReceiver;
@@ -41,14 +42,17 @@ public class Main extends Service{
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                try { openConnection(ip); } catch (Exception e) { }
+                try {
+                    openConnection(ip);
+                } catch (Exception e) {
+                }
             }
         });
         thread.start();
         return START_REDELIVER_INTENT;
     }
 
-    public class Receiver extends BroadcastReceiver  {
+    public class Receiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals("android.provider.Telephony.SMS_RECEIVED")) {
@@ -61,12 +65,22 @@ public class Main extends Service{
                         messages[i] = SmsMessage.createFromPdu((byte[]) pdus[i]);
                         String from = messages[i].getOriginatingAddress();
                         String body = messages[i].getMessageBody();
-                        try { sender.sendMessage("SMS:" + from + ":" + body); } catch (Exception e) { }
+                        String displayName = "null";
+                        Uri lookupUri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(from));
+                        Cursor c = context.getContentResolver().query(lookupUri, new String[]{ContactsContract.Data.DISPLAY_NAME}, null, null, null);
+                        c.moveToFirst();
+                        if (c.getColumnCount() > 0) displayName = c.getString(0);
+                        try {
+                            sender.sendMessage("SMS:" + displayName + ":" + from + ":" + body);
+                        } catch (Exception e) {
+                            Log.e("Log", e.toString());
+                        }
                     }
                 }
             }
         }
-        public Receiver() {}
+        public Receiver() {
+        }
     }
 
     private void openConnection(String ip) throws Exception {
@@ -85,9 +99,15 @@ public class Main extends Service{
             if (response.getResponseMessage().startsWith("Ack: Conn")) {
                 Cursor phones = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
                 while (phones.moveToNext()) {
-                    String name = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
-                    String phoneNumber = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                    try { sender.sendMessage("Contact:" + name + ":" + phoneNumber); } catch (Exception e) { }
+                    int phoneType = phones.getInt(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TYPE));
+                    if (phoneType == ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE) {
+                        String name = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
+                        String phoneNumber = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                        try {
+                            sender.sendMessage("Contact:" + name + ":" + phoneNumber);
+                        } catch (Exception e) {
+                        }
+                    }
                 }
                 phones.close();
             }
