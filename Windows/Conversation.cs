@@ -1,4 +1,5 @@
-﻿using System.Windows.Forms;
+﻿using System;
+using System.Windows.Forms;
 
 namespace SMSIM
 {
@@ -16,7 +17,8 @@ namespace SMSIM
             this.Text = input[1] + " (" + input[2] + ")";
             if (input.Length > 3)
             {
-                richTextBox1.AppendText(input[1] + ": " + input[3]);
+                string timestamp = "[" + DateTime.Now.ToString("HH:mm:ss") + "] ";
+                richTextBox1.AppendText(timestamp + input[1] + ": " + input[3] + "\n");
             }
         }
     }

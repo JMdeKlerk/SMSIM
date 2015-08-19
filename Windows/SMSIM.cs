@@ -37,7 +37,7 @@ namespace SMSIM
             String localIP = LocalIPAddress();
             IDuplexInputChannel anInputChannel = aMessaging.CreateDuplexInputChannel("tcp://" + localIP + ":8060/");
             receiver.AttachDuplexInputChannel(anInputChannel);
-            ipAddress.Text = localIP + ":8060";
+            if (receiver.IsDuplexInputChannelAttached) ipAddress.Text = localIP;
             this.ActiveControl = label1;
             contacts.DisplayMember = "name";
             contacts.ValueMember = "number";
@@ -76,7 +76,7 @@ namespace SMSIM
                 {
                     Conversation conversation = new Conversation(input);
                     openConversations.Add(input[1], conversation);
-                    Application.Run(conversation);
+                    conversation.Show();
                 }
             }
         }
@@ -102,6 +102,22 @@ namespace SMSIM
             }
         }
 
+        private void SMSIM_Resize(object sender, EventArgs e)
+        {
+            if (FormWindowState.Minimized == this.WindowState)
+            {
+                trayIcon.Visible = true;
+                this.Hide();
+            }
+        }
+
+        private void trayIcon_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            trayIcon.Visible = false;
+            this.Show();
+            this.WindowState = FormWindowState.Normal;
+        }
+
         private string LocalIPAddress()
         {
             IPHostEntry host;
@@ -117,6 +133,5 @@ namespace SMSIM
             }
             return localIP;
         }
-        
     }
 }

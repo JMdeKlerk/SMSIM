@@ -28,11 +28,14 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SMSIM));
             this.label1 = new System.Windows.Forms.Label();
             this.deviceName = new System.Windows.Forms.TextBox();
             this.ipAddress = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.contacts = new System.Windows.Forms.ListBox();
+            this.trayIcon = new System.Windows.Forms.NotifyIcon(this.components);
             this.SuspendLayout();
             // 
             // label1
@@ -87,6 +90,12 @@
             this.contacts.TabIndex = 4;
             this.contacts.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.contacts_doubleClick);
             // 
+            // trayIcon
+            // 
+            this.trayIcon.Icon = ((System.Drawing.Icon)(resources.GetObject("trayIcon.Icon")));
+            this.trayIcon.Text = "SMSIM";
+            this.trayIcon.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.trayIcon_MouseDoubleClick);
+            // 
             // SMSIM
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -100,6 +109,7 @@
             this.Name = "SMSIM";
             this.Text = "SMSIM";
             this.Load += new System.EventHandler(this.SMSIM_Load);
+            this.Resize += new System.EventHandler(this.SMSIM_Resize);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -112,6 +122,7 @@
         private System.Windows.Forms.TextBox ipAddress;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ListBox contacts;
+        private System.Windows.Forms.NotifyIcon trayIcon;
     }
 }
 

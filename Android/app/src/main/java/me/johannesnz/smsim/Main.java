@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
+import android.database.CursorIndexOutOfBoundsException;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -32,6 +33,7 @@ public class Main extends Service {
     public void onCreate() {
         IntentFilter filter = new IntentFilter();
         filter.addAction("android.provider.Telephony.SMS_RECEIVED");
+        filter.setPriority(IntentFilter.SYSTEM_HIGH_PRIORITY);
         messageReceiver = new Receiver();
         registerReceiver(messageReceiver, filter);
     }
@@ -45,9 +47,12 @@ public class Main extends Service {
                 try {
                     openConnection(ip);
                 } catch (Exception e) {
+                    Log.e("Log", e.toString());
                 }
             }
-        });
+        }
+
+        );
         thread.start();
         return START_REDELIVER_INTENT;
     }
@@ -62,23 +67,33 @@ public class Main extends Service {
                     Object[] pdus = (Object[]) bundle.get("pdus");
                     messages = new SmsMessage[pdus.length];
                     for (int i = 0; i < messages.length; i++) {
+                        Log.i("Log", "Message recieved " + i);
                         messages[i] = SmsMessage.createFromPdu((byte[]) pdus[i]);
                         String from = messages[i].getOriginatingAddress();
                         String body = messages[i].getMessageBody();
-                        String displayName = "null";
+                        String displayName;
                         Uri lookupUri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(from));
                         Cursor c = context.getContentResolver().query(lookupUri, new String[]{ContactsContract.Data.DISPLAY_NAME}, null, null, null);
                         c.moveToFirst();
-                        if (c.getColumnCount() > 0) displayName = c.getString(0);
+                        try {
+                            displayName = c.getString(0);
+                        } catch (CursorIndexOutOfBoundsException e) {
+                            displayName = "Unknown";
+                        }
                         try {
                             sender.sendMessage("SMS:" + displayName + ":" + from + ":" + body);
+                            Log.i("Log", "Message sent to PC");
                         } catch (Exception e) {
+                            Log.i("Log", "Message NOT sent to PC");
                             Log.e("Log", e.toString());
                         }
                     }
                 }
+            } else {
+                Log.i("Log", "Receiver fired, bad intent: " + intent.getAction());
             }
         }
+
         public Receiver() {
         }
     }
@@ -88,7 +103,7 @@ public class Main extends Service {
         sender = factory.createDuplexStringMessageSender();
         sender.responseReceived().subscribe(handler);
         IMessagingSystemFactory messenger = new TcpMessagingSystemFactory();
-        IDuplexOutputChannel output = messenger.createDuplexOutputChannel("tcp://" + ip + "/");
+        IDuplexOutputChannel output = messenger.createDuplexOutputChannel("tcp://" + ip + ":8060/");
         sender.attachDuplexOutputChannel(output);
         sender.sendMessage("Conn:" + Build.MODEL);
     }
@@ -106,6 +121,7 @@ public class Main extends Service {
                         try {
                             sender.sendMessage("Contact:" + name + ":" + phoneNumber);
                         } catch (Exception e) {
+                            Log.e("Log", e.toString());
                         }
                     }
                 }
@@ -113,6 +129,12 @@ public class Main extends Service {
             }
         }
     };
+
+    @Override
+    public void onDestroy() {
+        sender.detachDuplexOutputChannel();
+        super.onDestroy();
+    }
 
     @Override
     public IBinder onBind(Intent intent) {
