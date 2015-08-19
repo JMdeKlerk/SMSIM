@@ -30,7 +30,7 @@
         {
             this.send = new System.Windows.Forms.Button();
             this.entry = new System.Windows.Forms.TextBox();
-            this.richTextBox1 = new System.Windows.Forms.RichTextBox();
+            this.messageBox = new System.Windows.Forms.RichTextBox();
             this.SuspendLayout();
             // 
             // send
@@ -42,6 +42,7 @@
             this.send.TabIndex = 0;
             this.send.Text = "Send";
             this.send.UseVisualStyleBackColor = true;
+            this.send.Click += new System.EventHandler(this.send_Click);
             // 
             // entry
             // 
@@ -51,24 +52,25 @@
             this.entry.Name = "entry";
             this.entry.Size = new System.Drawing.Size(302, 20);
             this.entry.TabIndex = 1;
+            this.entry.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.entry_KeyPress);
             // 
             // richTextBox1
             // 
-            this.richTextBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.messageBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.richTextBox1.Location = new System.Drawing.Point(13, 13);
-            this.richTextBox1.Name = "richTextBox1";
-            this.richTextBox1.Size = new System.Drawing.Size(382, 288);
-            this.richTextBox1.TabIndex = 2;
-            this.richTextBox1.Text = "";
+            this.messageBox.Location = new System.Drawing.Point(13, 13);
+            this.messageBox.Name = "richTextBox1";
+            this.messageBox.Size = new System.Drawing.Size(382, 288);
+            this.messageBox.TabIndex = 2;
+            this.messageBox.Text = "";
             // 
             // Conversation
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(407, 342);
-            this.Controls.Add(this.richTextBox1);
+            this.Controls.Add(this.messageBox);
             this.Controls.Add(this.entry);
             this.Controls.Add(this.send);
             this.Name = "Conversation";
@@ -82,12 +84,6 @@
 
         private System.Windows.Forms.Button send;
         private System.Windows.Forms.TextBox entry;
-        private System.Windows.Forms.RichTextBox richTextBox1;
-        private SMSIM.Contact selected;
-
-        public Conversation(SMSIM.Contact selected)
-        {
-            this.selected = selected;
-        }
+        private System.Windows.Forms.RichTextBox messageBox;
     }
 }

