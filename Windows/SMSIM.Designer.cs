@@ -108,6 +108,7 @@
             this.Controls.Add(this.label1);
             this.Name = "SMSIM";
             this.Text = "SMSIM";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.SMSIM_FormClosing);
             this.Load += new System.EventHandler(this.SMSIM_Load);
             this.Resize += new System.EventHandler(this.SMSIM_Resize);
             this.ResumeLayout(false);

@@ -7,6 +7,7 @@ using Eneter.Messaging.EndPoints.StringMessages;
 using Eneter.Messaging.MessagingSystems.MessagingSystemBase;
 using Eneter.Messaging.MessagingSystems.TcpMessagingSystem;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace SMSIM
 {
@@ -52,7 +53,13 @@ namespace SMSIM
             {
                 connectedDevice = e.ResponseReceiverId;
                 deviceName.Invoke(new MethodInvoker(delegate { deviceName.Text = input[1]; }));
-                contacts.Invoke(new MethodInvoker(delegate { contacts.ResetText(); }));
+                contacts.Invoke(new MethodInvoker(delegate { contacts.Items.Clear(); }));
+            }
+            if (input[0].Equals("DC"))
+            {
+                connectedDevice = null;
+                deviceName.Invoke(new MethodInvoker(delegate { deviceName.Text = "-"; }));
+                contacts.Invoke(new MethodInvoker(delegate { contacts.Items.Clear(); }));
             }
             if (input[0].Equals("Contact"))
             {
@@ -116,6 +123,11 @@ namespace SMSIM
             trayIcon.Visible = false;
             this.Show();
             this.WindowState = FormWindowState.Normal;
+        }
+
+        private void SMSIM_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            receiver.DetachDuplexInputChannel();
         }
 
         private string LocalIPAddress()
