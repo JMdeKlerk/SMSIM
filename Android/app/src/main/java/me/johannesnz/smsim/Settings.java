@@ -2,21 +2,25 @@ package me.johannesnz.smsim;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
+import android.widget.CheckedTextView;
 import android.widget.EditText;
 import android.widget.TextView;
 
 public class Settings extends AppCompatActivity {
 
+    Intent main;
     private SharedPreferences prefs;
     private SharedPreferences.Editor editor;
     private BroadcastReceiver uiUpdater;
-    Intent main;
+    private CheckedTextView startOnBoot, autoReconnect;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +36,10 @@ public class Settings extends AppCompatActivity {
             EditText ipEntry = (EditText) findViewById(R.id.ipAddress);
             ipEntry.setText(prefs.getString("ip", ""), TextView.BufferType.EDITABLE);
         }
+        startOnBoot = (CheckedTextView) findViewById(R.id.startOnBoot);
+        startOnBoot.setOnClickListener(toggleStartOnBoot);
+        autoReconnect = (CheckedTextView) findViewById(R.id.autoReconnect);
+        autoReconnect.setOnClickListener(toggleAutoReconnect);
     }
 
     public void connect(View view) {
@@ -42,6 +50,34 @@ public class Settings extends AppCompatActivity {
         editor.commit();
         startService(main);
     }
+
+    View.OnClickListener toggleStartOnBoot = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            startOnBoot.toggle();
+            if (startOnBoot.isChecked()) {
+                editor.putBoolean("startOnBoot", true);
+            }
+            else {
+                editor.putBoolean("startOnBoot", false);
+            }
+            editor.commit();
+        }
+    };
+
+    View.OnClickListener toggleAutoReconnect = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            autoReconnect.toggle();
+            if (autoReconnect.isChecked()) {
+                editor.putBoolean("autoReconnect", true);
+            }
+            else {
+                editor.putBoolean("autoReconnect", false);
+            }
+            editor.commit();
+        }
+    };
 
     public void exit(View view) {
         stopService(main);
