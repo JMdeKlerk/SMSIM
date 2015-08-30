@@ -14,9 +14,9 @@ namespace SMSIM
     public partial class SMSIM : Form
     {
 
-        private IDuplexStringMessageReceiver receiver;
-        String connectedDevice;
-        Dictionary<String, Conversation> openConversations = new Dictionary<string, Conversation>();
+        public IDuplexStringMessageReceiver receiver;
+        public String connectedDevice;
+        public Dictionary<String, Conversation> openConversations = new Dictionary<string, Conversation>();
 
         public SMSIM()
         {
@@ -81,7 +81,7 @@ namespace SMSIM
                 }
                 else
                 {
-                    Conversation conversation = new Conversation(receiver, connectedDevice, input);
+                    Conversation conversation = new Conversation(this, input);
                     openConversations.Add(input[1], conversation);
                     conversation.Show();
                 }
@@ -103,7 +103,7 @@ namespace SMSIM
             else
             {
                 String[] input = { "null", selected.name, selected.number };
-                Conversation conversation = new Conversation(receiver, connectedDevice, input);
+                Conversation conversation = new Conversation(this, input);
                 openConversations.Add(selected.name, conversation);
                 conversation.Show();
             }

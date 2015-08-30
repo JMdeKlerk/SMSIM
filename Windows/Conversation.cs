@@ -8,13 +8,15 @@ namespace SMSIM
     {
 
         private IDuplexStringMessageReceiver receiver;
+        private SMSIM parent;
         private String device, name, number;
 
-        public Conversation(IDuplexStringMessageReceiver receiver, String connectedDevice, string[] input)
+        public Conversation(SMSIM parent, string[] input)
         {
             InitializeComponent();
-            this.receiver = receiver;
-            this.device = connectedDevice;
+            this.parent = parent;
+            this.receiver = parent.receiver;
+            this.device = parent.connectedDevice;
             this.name = input[1];
             this.number = input[2];
             ParseInput(input);
@@ -35,6 +37,11 @@ namespace SMSIM
             receiver.SendResponseMessage(device, "SMS:" + this.number + ":" + message);
             string timestamp = "[" + DateTime.Now.ToString("HH:mm:ss") + "] ";
             messageBox.AppendText(timestamp + "You: " + message + "\n");
+        }
+
+        private void Conversation_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            parent.openConversations.Remove(this.name);
         }
 
         private void send_Click(object sender, EventArgs e)

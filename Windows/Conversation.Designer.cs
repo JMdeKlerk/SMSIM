@@ -54,13 +54,13 @@
             this.entry.TabIndex = 1;
             this.entry.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.entry_KeyPress);
             // 
-            // richTextBox1
+            // messageBox
             // 
             this.messageBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.messageBox.Location = new System.Drawing.Point(13, 13);
-            this.messageBox.Name = "richTextBox1";
+            this.messageBox.Name = "messageBox";
             this.messageBox.Size = new System.Drawing.Size(382, 288);
             this.messageBox.TabIndex = 2;
             this.messageBox.Text = "";
@@ -75,6 +75,7 @@
             this.Controls.Add(this.send);
             this.Name = "Conversation";
             this.Text = "Conversation";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Conversation_FormClosing);
             this.ResumeLayout(false);
             this.PerformLayout();
 

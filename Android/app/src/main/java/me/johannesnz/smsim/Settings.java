@@ -36,10 +36,10 @@ public class Settings extends AppCompatActivity {
             EditText ipEntry = (EditText) findViewById(R.id.ipAddress);
             ipEntry.setText(prefs.getString("ip", ""), TextView.BufferType.EDITABLE);
         }
-        startOnBoot = (CheckedTextView) findViewById(R.id.startOnBoot);
-        startOnBoot.setOnClickListener(toggleStartOnBoot);
         autoReconnect = (CheckedTextView) findViewById(R.id.autoReconnect);
         autoReconnect.setOnClickListener(toggleAutoReconnect);
+        startOnBoot = (CheckedTextView) findViewById(R.id.startOnBoot);
+        startOnBoot.setOnClickListener(toggleStartOnBoot);
     }
 
     public void connect(View view) {
@@ -51,20 +51,6 @@ public class Settings extends AppCompatActivity {
         startService(main);
     }
 
-    View.OnClickListener toggleStartOnBoot = new View.OnClickListener() {
-        @Override
-        public void onClick(View view) {
-            startOnBoot.toggle();
-            if (startOnBoot.isChecked()) {
-                editor.putBoolean("startOnBoot", true);
-            }
-            else {
-                editor.putBoolean("startOnBoot", false);
-            }
-            editor.commit();
-        }
-    };
-
     View.OnClickListener toggleAutoReconnect = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
@@ -74,6 +60,20 @@ public class Settings extends AppCompatActivity {
             }
             else {
                 editor.putBoolean("autoReconnect", false);
+            }
+            editor.commit();
+        }
+    };
+
+    View.OnClickListener toggleStartOnBoot = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            startOnBoot.toggle();
+            if (startOnBoot.isChecked()) {
+                editor.putBoolean("startOnBoot", true);
+            }
+            else {
+                editor.putBoolean("startOnBoot", false);
             }
             editor.commit();
         }
