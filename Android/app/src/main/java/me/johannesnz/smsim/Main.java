@@ -9,6 +9,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.CursorIndexOutOfBoundsException;
 import android.net.Uri;
@@ -16,7 +17,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.ContactsContract;
-import android.support.v4.app.NotificationCompat;
 import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
 import android.util.Log;
@@ -32,11 +32,13 @@ import eneter.net.system.EventHandler;
 
 public class Main extends Service {
 
+    private SharedPreferences prefs;
     private IDuplexStringMessageSender sender;
     private BroadcastReceiver messageReceiver;
 
     @Override
     public void onCreate() {
+        prefs = getSharedPreferences("SMSIM", MODE_PRIVATE);
         IntentFilter filter = new IntentFilter();
         filter.addAction("android.provider.Telephony.SMS_RECEIVED");
         filter.setPriority(IntentFilter.SYSTEM_HIGH_PRIORITY);
@@ -89,6 +91,9 @@ public class Main extends Service {
                         try {
                             sender.sendMessage("SMS:" + displayName + ":" + from + ":" + body);
                             Log.i("Log", "Message sent to PC");
+                            if (prefs.getBoolean("supressAlerts", false)) {
+                                abortBroadcast();
+                            }
                         } catch (Exception e) {
                             Log.i("Log", "Message NOT sent to PC");
                             Log.e("Log", e.toString());

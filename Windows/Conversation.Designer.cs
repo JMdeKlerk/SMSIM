@@ -52,7 +52,6 @@
             this.entry.Name = "entry";
             this.entry.Size = new System.Drawing.Size(302, 20);
             this.entry.TabIndex = 1;
-            this.entry.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.entry_KeyPress);
             // 
             // messageBox
             // 
@@ -67,6 +66,7 @@
             // 
             // Conversation
             // 
+            this.AcceptButton = this.send;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(407, 342);

@@ -2,13 +2,11 @@ package me.johannesnz.smsim;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.CheckedTextView;
 import android.widget.EditText;
@@ -20,7 +18,7 @@ public class Settings extends AppCompatActivity {
     private SharedPreferences prefs;
     private SharedPreferences.Editor editor;
     private BroadcastReceiver uiUpdater;
-    private CheckedTextView startOnBoot, autoReconnect;
+    private CheckedTextView startOnBoot, supressAlerts;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,10 +34,12 @@ public class Settings extends AppCompatActivity {
             EditText ipEntry = (EditText) findViewById(R.id.ipAddress);
             ipEntry.setText(prefs.getString("ip", ""), TextView.BufferType.EDITABLE);
         }
-        autoReconnect = (CheckedTextView) findViewById(R.id.autoReconnect);
-        autoReconnect.setOnClickListener(toggleAutoReconnect);
+        supressAlerts = (CheckedTextView) findViewById(R.id.supressAlerts);
+        supressAlerts.setOnClickListener(toggleSupressAlerts);
+        supressAlerts.setChecked(prefs.getBoolean("supressAlerts", false));
         startOnBoot = (CheckedTextView) findViewById(R.id.startOnBoot);
         startOnBoot.setOnClickListener(toggleStartOnBoot);
+        supressAlerts.setChecked(prefs.getBoolean("startOnBoot", false));
     }
 
     public void connect(View view) {
@@ -51,15 +51,15 @@ public class Settings extends AppCompatActivity {
         startService(main);
     }
 
-    View.OnClickListener toggleAutoReconnect = new View.OnClickListener() {
+    View.OnClickListener toggleSupressAlerts = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            autoReconnect.toggle();
-            if (autoReconnect.isChecked()) {
-                editor.putBoolean("autoReconnect", true);
+            supressAlerts.toggle();
+            if (supressAlerts.isChecked()) {
+                editor.putBoolean("supressAlerts", true);
             }
             else {
-                editor.putBoolean("autoReconnect", false);
+                editor.putBoolean("supressAlerts", false);
             }
             editor.commit();
         }

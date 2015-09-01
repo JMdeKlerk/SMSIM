@@ -76,7 +76,7 @@
         android:orientation="horizontal">
 
         <CheckedTextView
-            android:id="@+id/autoReconnect"
+            android:id="@+id/supressAlerts"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/activity_vertical_margin"
@@ -85,7 +85,7 @@
             android:layout_weight="1"
             android:checkMark="?android:attr/listChoiceIndicatorMultiple"
             android:gravity="center_vertical"
-            android:text="Auto reconnect"
+            android:text="Supress alerts"
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
     </LinearLayout>

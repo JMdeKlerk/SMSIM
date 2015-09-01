@@ -49,14 +49,5 @@ namespace SMSIM
             sendMessage(entry.Text);
             entry.Text = "";
         }
-
-        private void entry_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if (e.KeyChar == (char)Keys.Enter)
-            {
-                sendMessage(entry.Text);
-                entry.Text = "";
-            }
-        }
     }
 }
