@@ -39,7 +39,7 @@ public class Settings extends AppCompatActivity {
         supressAlerts.setChecked(prefs.getBoolean("supressAlerts", false));
         startOnBoot = (CheckedTextView) findViewById(R.id.startOnBoot);
         startOnBoot.setOnClickListener(toggleStartOnBoot);
-        supressAlerts.setChecked(prefs.getBoolean("startOnBoot", false));
+        startOnBoot.setChecked(prefs.getBoolean("startOnBoot", false));
     }
 
     public void connect(View view) {

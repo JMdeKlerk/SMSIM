@@ -8,6 +8,7 @@ using Eneter.Messaging.MessagingSystems.MessagingSystemBase;
 using Eneter.Messaging.MessagingSystems.TcpMessagingSystem;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.ComponentModel;
 
 namespace SMSIM
 {
@@ -81,16 +82,21 @@ namespace SMSIM
                 }
                 else
                 {
-                    Conversation conversation = new Conversation(this, input);
-                    openConversations.Add(input[1], conversation);
-                    conversation.Show();
+                    BackgroundWorker bw = new BackgroundWorker();
+                    bw.DoWork += new DoWorkEventHandler(delegate (object o, DoWorkEventArgs args)
+                    {
+                        Conversation conversation = new Conversation(this, input);
+                        openConversations.Add(input[1], conversation);
+                        Application.Run(conversation);
+                    });
+                    bw.RunWorkerAsync();
                 }
             }
         }
 
         private void contacts_doubleClick(object sender, MouseEventArgs e)
         {
-            Contact selected = (Contact) contacts.SelectedItem;
+            Contact selected = (Contact)contacts.SelectedItem;
             if (openConversations.ContainsKey(selected.name))
             {
                 Conversation conversation;
