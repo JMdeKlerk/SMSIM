@@ -54,6 +54,17 @@ public class Main extends Service {
             public void run() {
                 try {
                     openConnection(ip);
+                    while (true) {
+                        if (!sender.getAttachedDuplexOutputChannel().isConnected()) {
+                            Intent broadcastIntent = new Intent();
+                            broadcastIntent.setAction("me.johannesnz.UPDATE");
+                            broadcastIntent.putExtra("update", "disconn");
+                            sendBroadcast(broadcastIntent);
+                            openConnection(ip);
+                        } else {
+                            Thread.sleep(300000);
+                        }
+                    }
                 } catch (Exception e) {
                     Log.e("Log", e.toString());
                 }
@@ -69,36 +80,46 @@ public class Main extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals("android.provider.Telephony.SMS_RECEIVED")) {
-                Bundle bundle = intent.getExtras();
-                SmsMessage[] messages;
-                if (bundle != null) {
-                    Object[] pdus = (Object[]) bundle.get("pdus");
-                    messages = new SmsMessage[pdus.length];
-                    for (int i = 0; i < messages.length; i++) {
-                        Log.i("Log", "Message recieved " + i);
-                        messages[i] = SmsMessage.createFromPdu((byte[]) pdus[i]);
-                        String from = messages[i].getOriginatingAddress();
-                        String body = messages[i].getMessageBody();
-                        String displayName;
-                        Uri lookupUri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(from));
-                        Cursor c = context.getContentResolver().query(lookupUri, new String[]{ContactsContract.Data.DISPLAY_NAME}, null, null, null);
-                        c.moveToFirst();
-                        try {
-                            displayName = c.getString(0);
-                        } catch (CursorIndexOutOfBoundsException e) {
-                            displayName = "Unknown";
-                        }
-                        try {
-                            sender.sendMessage("SMS:" + displayName + ":" + from + ":" + body);
-                            Log.i("Log", "Message sent to PC");
-                            if (prefs.getBoolean("supressAlerts", false)) {
-                                abortBroadcast();
+                if (sender.getAttachedDuplexOutputChannel().isConnected()) {
+                    Bundle bundle = intent.getExtras();
+                    SmsMessage[] messages;
+                    if (bundle != null) {
+                        Object[] pdus = (Object[]) bundle.get("pdus");
+                        messages = new SmsMessage[pdus.length];
+                        for (int i = 0; i < messages.length; i++) {
+                            Log.i("Log", "Message recieved " + i);
+                            messages[i] = SmsMessage.createFromPdu((byte[]) pdus[i]);
+                            String from = messages[i].getOriginatingAddress();
+                            String body = messages[i].getMessageBody();
+                            String displayName;
+                            Uri lookupUri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(from));
+                            Cursor c = context.getContentResolver().query(lookupUri, new String[]{ContactsContract.Data.DISPLAY_NAME}, null, null, null);
+                            c.moveToFirst();
+                            try {
+                                displayName = c.getString(0);
+                            } catch (CursorIndexOutOfBoundsException e) {
+                                displayName = "Unknown";
                             }
-                        } catch (Exception e) {
-                            Log.i("Log", "Message NOT sent to PC");
-                            Log.e("Log", e.toString());
+                            try {
+                                sender.sendMessage("SMS:" + displayName + ":" + from + ":" + body);
+                                Log.i("Log", "Message sent to PC");
+                                if (prefs.getBoolean("supressAlerts", false)) {
+                                    abortBroadcast();
+                                }
+                            } catch (Exception e) {
+                                Log.i("Log", "Message NOT sent to PC");
+                                Intent broadcastIntent = new Intent();
+                                broadcastIntent.setAction("me.johannesnz.UPDATE");
+                                broadcastIntent.putExtra("update", "disconn");
+                                sendBroadcast(broadcastIntent);
+                            }
                         }
                     }
+                } else {
+                    Intent broadcastIntent = new Intent();
+                    broadcastIntent.setAction("me.johannesnz.UPDATE");
+                    broadcastIntent.putExtra("update", "disconn");
+                    sendBroadcast(broadcastIntent);
                 }
             } else {
                 Log.i("Log", "Receiver fired, bad intent: " + intent.getAction());
@@ -155,6 +176,7 @@ public class Main extends Service {
                 String[] input = response.getResponseMessage().split(":");
                 SmsManager sms = SmsManager.getDefault();
                 sms.sendTextMessage(input[1], null, input[2], null, null);
+                Log.i("Log", "Sent.");
             }
         }
     };

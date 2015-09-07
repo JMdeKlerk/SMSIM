@@ -92,6 +92,10 @@ public class Settings extends AppCompatActivity {
                 TextView status = (TextView) findViewById(R.id.status);
                 status.setText("Connected");
             }
+            if (intent.getStringExtra("update").equals("disconn")) {
+                TextView status = (TextView) findViewById(R.id.status);
+                status.setText("Not connected");
+            }
         }
 
         public UIUpdater() {

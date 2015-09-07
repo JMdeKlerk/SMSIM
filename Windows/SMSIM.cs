@@ -9,6 +9,7 @@ using Eneter.Messaging.MessagingSystems.TcpMessagingSystem;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.ComponentModel;
+using System.Media;
 
 namespace SMSIM
 {
@@ -71,6 +72,7 @@ namespace SMSIM
             }
             if (input[0].Equals("SMS"))
             {
+                SystemSounds.Beep.Play();
                 if (openConversations.ContainsKey(input[1]))
                 {
                     Conversation conversation;
