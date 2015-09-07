@@ -34,7 +34,7 @@
             this.deviceName = new System.Windows.Forms.TextBox();
             this.ipAddress = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.contacts = new System.Windows.Forms.ListBox();
+            this.contacts = new FancyListBox();
             this.trayIcon = new System.Windows.Forms.NotifyIcon(this.components);
             this.SuspendLayout();
             // 

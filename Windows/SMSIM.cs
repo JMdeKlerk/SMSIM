@@ -7,7 +7,6 @@ using Eneter.Messaging.EndPoints.StringMessages;
 using Eneter.Messaging.MessagingSystems.MessagingSystemBase;
 using Eneter.Messaging.MessagingSystems.TcpMessagingSystem;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.ComponentModel;
 using System.Media;
 
@@ -42,8 +41,6 @@ namespace SMSIM
             receiver.AttachDuplexInputChannel(anInputChannel);
             if (receiver.IsDuplexInputChannelAttached) ipAddress.Text = localIP;
             this.ActiveControl = label1;
-            contacts.DisplayMember = "name";
-            contacts.ValueMember = "number";
         }
 
         private void OnRequestReceived(object sender, StringRequestReceivedEventArgs e)

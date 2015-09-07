@@ -55,6 +55,9 @@
     <Compile Include="Conversation.Designer.cs">
       <DependentUpon>Conversation.cs</DependentUpon>
     </Compile>
+    <Compile Include="FancyListBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="SMSIM.cs">
       <SubType>Form</SubType>
     </Compile>
