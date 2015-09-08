@@ -82,11 +82,16 @@
             // 
             // contacts
             // 
+            this.contacts.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.contacts.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
             this.contacts.FormattingEnabled = true;
             this.contacts.ImeMode = System.Windows.Forms.ImeMode.NoControl;
+            this.contacts.ItemHeight = 54;
             this.contacts.Location = new System.Drawing.Point(12, 64);
             this.contacts.Name = "contacts";
-            this.contacts.Size = new System.Drawing.Size(230, 329);
+            this.contacts.Size = new System.Drawing.Size(230, 328);
             this.contacts.TabIndex = 4;
             this.contacts.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.contacts_doubleClick);
             // 
@@ -122,8 +127,8 @@
         private System.Windows.Forms.TextBox deviceName;
         private System.Windows.Forms.TextBox ipAddress;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.ListBox contacts;
         private System.Windows.Forms.NotifyIcon trayIcon;
+        private FancyListBox contacts;
     }
 }
 

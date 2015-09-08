@@ -149,6 +149,7 @@ public class Main extends Service {
                 broadcastIntent.setAction("me.johannesnz.UPDATE");
                 broadcastIntent.putExtra("update", "conn");
                 sendBroadcast(broadcastIntent);
+                Log.i("Log", "Sending contacts.");
                 NotificationManager mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
                 Notification not = new Notification(R.mipmap.ic_launcher, "SMSIM: Connected.", System.currentTimeMillis());
                 Intent notificationIntent = new Intent(getApplicationContext(), Settings.class);
@@ -162,8 +163,9 @@ public class Main extends Service {
                     if (phoneType == ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE) {
                         String name = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
                         String phoneNumber = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                        String pic = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.PHOTO_URI));
                         try {
-                            sender.sendMessage("Contact:" + name + ":" + phoneNumber);
+                            sender.sendMessage("Contact:" + name + ":" + phoneNumber + ":" + pic);
                         } catch (Exception e) {
                             Log.e("Log", e.toString());
                         }

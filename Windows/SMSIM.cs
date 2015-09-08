@@ -9,6 +9,8 @@ using Eneter.Messaging.MessagingSystems.TcpMessagingSystem;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Media;
+using System.Drawing;
+using System.IO;
 
 namespace SMSIM
 {
@@ -28,6 +30,7 @@ namespace SMSIM
         {
             public String name { get; set; }
             public String number { get; set; }
+            public Bitmap displayPic { get; set; }
         }
 
         private void SMSIM_Load(object sender, EventArgs e)
@@ -65,6 +68,11 @@ namespace SMSIM
                 Contact contact = new Contact();
                 contact.name = input[1];
                 contact.number = input[2];
+                if (input[3].Equals("null")) input[3] = "http://i.imgur.com/P5MVK.jpg";
+                WebRequest request = WebRequest.Create(input[3]);
+                WebResponse response = request.GetResponse();
+                Stream responseStream = response.GetResponseStream();
+                contact.displayPic = new Bitmap(responseStream);
                 contacts.Invoke(new MethodInvoker(delegate { contacts.Items.Add(contact); contacts.Sorted = true; }));
             }
             if (input[0].Equals("SMS"))
