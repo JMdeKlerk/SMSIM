@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -91,10 +92,12 @@ public class Settings extends AppCompatActivity {
             if (intent.getStringExtra("update").equals("conn")) {
                 TextView status = (TextView) findViewById(R.id.status);
                 status.setText("Connected");
+                status.setTextColor(Color.GREEN);
             }
             if (intent.getStringExtra("update").equals("disconn")) {
                 TextView status = (TextView) findViewById(R.id.status);
-                status.setText("Not connected");
+                status.setText("Disconnected");
+                status.setTextColor(Color.RED);
             }
         }
 
