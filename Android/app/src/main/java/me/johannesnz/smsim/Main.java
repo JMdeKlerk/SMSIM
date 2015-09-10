@@ -1,8 +1,6 @@
 package me.johannesnz.smsim;
 
-import android.app.Notification;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Intent;
@@ -28,16 +26,11 @@ public class Main extends Service {
 
     private SharedPreferences prefs;
     private IDuplexStringMessageSender sender;
-    private BroadcastReceiver messageReceiver;
+    private BroadcastReceiver messageReceiver, wifiReceiver;
 
     @Override
     public void onCreate() {
         prefs = getSharedPreferences("SMSIM", MODE_PRIVATE);
-        messageReceiver = new SMSReceiver(this, sender);
-        IntentFilter smsFilter = new IntentFilter();
-        smsFilter.addAction("android.provider.Telephony.SMS_RECEIVED");
-        smsFilter.setPriority(IntentFilter.SYSTEM_HIGH_PRIORITY);
-        registerReceiver(messageReceiver, smsFilter);
     }
 
     @Override
@@ -76,6 +69,11 @@ public class Main extends Service {
         IDuplexOutputChannel output = messenger.createDuplexOutputChannel("tcp://" + ip + ":8060/");
         sender.attachDuplexOutputChannel(output);
         sender.sendMessage("Conn:" + Build.MODEL);
+        messageReceiver = new SMSReceiver(this, sender);
+        IntentFilter smsFilter = new IntentFilter();
+        smsFilter.addAction("android.provider.Telephony.SMS_RECEIVED");
+        smsFilter.setPriority(IntentFilter.SYSTEM_HIGH_PRIORITY);
+        registerReceiver(messageReceiver, smsFilter);
     }
 
     public void updateConnectionStatus(String status) {
@@ -83,24 +81,6 @@ public class Main extends Service {
         broadcastIntent.setAction("me.johannesnz.UPDATE");
         broadcastIntent.putExtra("update", status);
         sendBroadcast(broadcastIntent);
-        NotificationManager mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        mNotificationManager.cancel(1);
-        if (status.equals("conn")) {
-            Notification not = new Notification(R.mipmap.ic_launcher, "SMSIM: Connected.", System.currentTimeMillis());
-            Intent notificationIntent = new Intent(getApplicationContext(), Settings.class);
-            PendingIntent pi = PendingIntent.getActivity(getApplicationContext(), 0, notificationIntent, PendingIntent.FLAG_NO_CREATE);
-            not.flags = Notification.FLAG_ONGOING_EVENT;
-            not.setLatestEventInfo(getApplicationContext(), "SMSIM", "Service is running.", pi);
-            mNotificationManager.notify(1, not);
-        }
-        if (status.equals("disconn")) {
-            Notification not = new Notification(R.mipmap.ic_launcher, "SMSIM: Disconnected.", System.currentTimeMillis());
-            Intent notificationIntent = new Intent(getApplicationContext(), Settings.class);
-            PendingIntent pi = PendingIntent.getActivity(getApplicationContext(), 0, notificationIntent, PendingIntent.FLAG_NO_CREATE);
-            not.flags = Notification.FLAG_ONGOING_EVENT;
-            not.setLatestEventInfo(getApplicationContext(), "SMSIM", "Disconnected.", pi);
-            mNotificationManager.notify(1, not);
-        }
     }
 
     EventHandler<StringResponseReceivedEventArgs> handler = new EventHandler<StringResponseReceivedEventArgs>() {
@@ -137,10 +117,8 @@ public class Main extends Service {
         try {
             sender.sendMessage("DC");
         } catch (Exception e) {
-            e.printStackTrace();
+
         }
-        NotificationManager mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        mNotificationManager.cancel(1);
         unregisterReceiver(messageReceiver);
         sender.detachDuplexOutputChannel();
         super.onDestroy();

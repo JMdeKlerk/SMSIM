@@ -1,5 +1,8 @@
 package me.johannesnz.smsim;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -58,8 +61,7 @@ public class Settings extends AppCompatActivity {
             supressAlerts.toggle();
             if (supressAlerts.isChecked()) {
                 editor.putBoolean("supressAlerts", true);
-            }
-            else {
+            } else {
                 editor.putBoolean("supressAlerts", false);
             }
             editor.commit();
@@ -72,8 +74,7 @@ public class Settings extends AppCompatActivity {
             startOnBoot.toggle();
             if (startOnBoot.isChecked()) {
                 editor.putBoolean("startOnBoot", true);
-            }
-            else {
+            } else {
                 editor.putBoolean("startOnBoot", false);
             }
             editor.commit();
@@ -82,27 +83,50 @@ public class Settings extends AppCompatActivity {
 
     public void exit(View view) {
         stopService(main);
+        NotificationManager mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        mNotificationManager.cancel(1);
         unregisterReceiver(uiUpdater);
+        editor.putBoolean("isConnected", false);
+        editor.commit();
         finish();
     }
 
     public class UIUpdater extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (intent.getStringExtra("update").equals("conn")) {
-                TextView status = (TextView) findViewById(R.id.status);
-                status.setText("Connected");
-                status.setTextColor(Color.GREEN);
-            }
-            if (intent.getStringExtra("update").equals("disconn")) {
-                TextView status = (TextView) findViewById(R.id.status);
-                status.setText("Disconnected");
-                status.setTextColor(Color.RED);
-            }
-        }
 
         public UIUpdater() {
 
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            mNotificationManager.cancel(1);
+            if (intent.getStringExtra("update").equals("conn") && !prefs.getBoolean("isConnected", false)) {
+                editor.putBoolean("isConnected", true);
+                editor.commit();
+                TextView status = (TextView) findViewById(R.id.status);
+                status.setText("Connected");
+                status.setTextColor(Color.GREEN);
+                Notification not = new Notification(R.mipmap.ic_launcher, "SMSIM: Connected.", System.currentTimeMillis());
+                Intent notificationIntent = new Intent(getApplicationContext(), Settings.class);
+                PendingIntent pi = PendingIntent.getActivity(getApplicationContext(), 0, notificationIntent, PendingIntent.FLAG_NO_CREATE);
+                not.flags = Notification.FLAG_ONGOING_EVENT;
+                not.setLatestEventInfo(getApplicationContext(), "SMSIM", "Service is running.", pi);
+                mNotificationManager.notify(1, not);
+            }
+            if (intent.getStringExtra("update").equals("disconn") && prefs.getBoolean("isConnected", false)) {
+                editor.putBoolean("isConnected", false);
+                editor.commit();
+                TextView status = (TextView) findViewById(R.id.status);
+                status.setText("Disconnected");
+                status.setTextColor(Color.RED);
+                Notification not = new Notification(R.mipmap.ic_launcher, "SMSIM: Disconnected.", System.currentTimeMillis());
+                Intent notificationIntent = new Intent(context, Settings.class);
+                PendingIntent pi = PendingIntent.getActivity(context, 0, notificationIntent, PendingIntent.FLAG_NO_CREATE);
+                not.flags = Notification.FLAG_ONGOING_EVENT;
+                not.setLatestEventInfo(context, "SMSIM", "Disconnected.", pi);
+                mNotificationManager.notify(1, not);
+            }
         }
     }
 }
