@@ -1,11 +1,9 @@
 package me.johannesnz.smsim;
 
-import android.app.NotificationManager;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Build;
 import android.os.IBinder;
@@ -24,14 +22,8 @@ import eneter.net.system.EventHandler;
 
 public class Main extends Service {
 
-    private SharedPreferences prefs;
-    private IDuplexStringMessageSender sender;
-    private BroadcastReceiver messageReceiver, wifiReceiver;
-
-    @Override
-    public void onCreate() {
-        prefs = getSharedPreferences("SMSIM", MODE_PRIVATE);
-    }
+    public IDuplexStringMessageSender sender;
+    private BroadcastReceiver messageReceiver;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -69,7 +61,7 @@ public class Main extends Service {
         IDuplexOutputChannel output = messenger.createDuplexOutputChannel("tcp://" + ip + ":8060/");
         sender.attachDuplexOutputChannel(output);
         sender.sendMessage("Conn:" + Build.MODEL);
-        messageReceiver = new SMSReceiver(this, sender);
+        messageReceiver = new SMSReceiver(this);
         IntentFilter smsFilter = new IntentFilter();
         smsFilter.addAction("android.provider.Telephony.SMS_RECEIVED");
         smsFilter.setPriority(IntentFilter.SYSTEM_HIGH_PRIORITY);

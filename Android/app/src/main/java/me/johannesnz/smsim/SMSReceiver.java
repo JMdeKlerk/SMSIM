@@ -11,16 +11,14 @@ import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.telephony.SmsMessage;
 
-import eneter.messaging.endpoints.stringmessages.IDuplexStringMessageSender;
-
 public class SMSReceiver extends BroadcastReceiver {
 
+    Main parent;
     private SharedPreferences prefs;
-    private IDuplexStringMessageSender sender;
 
-    public SMSReceiver(Context context, IDuplexStringMessageSender sender) {
-        prefs = context.getSharedPreferences("SMSIM", Context.MODE_PRIVATE);
-        this.sender = sender;
+    public SMSReceiver(Main parent) {
+        this.parent = parent;
+        prefs = parent.getSharedPreferences("SMSIM", Context.MODE_PRIVATE);
     }
 
     @Override
@@ -45,7 +43,7 @@ public class SMSReceiver extends BroadcastReceiver {
                         displayName = "Unknown";
                     }
                     try {
-                        sender.sendMessage("SMS:" + displayName + ":" + from + ":" + body);
+                        parent.sender.sendMessage("SMS:" + displayName + ":" + from + ":" + body);
                         if (prefs.getBoolean("supressAlerts", false)) {
                             abortBroadcast();
                         }

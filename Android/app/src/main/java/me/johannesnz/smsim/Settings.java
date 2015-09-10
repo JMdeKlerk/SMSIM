@@ -12,6 +12,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.Button;
 import android.widget.CheckedTextView;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -104,9 +105,17 @@ public class Settings extends AppCompatActivity {
             if (intent.getStringExtra("update").equals("conn") && !prefs.getBoolean("isConnected", false)) {
                 editor.putBoolean("isConnected", true);
                 editor.commit();
+
                 TextView status = (TextView) findViewById(R.id.status);
                 status.setText("Connected");
                 status.setTextColor(Color.GREEN);
+
+                TextView address = (TextView) findViewById(R.id.ipAddress);
+                address.setEnabled(false);
+
+                Button connect = (Button) findViewById(R.id.connect);
+                connect.setEnabled(false);
+
                 Notification not = new Notification(R.mipmap.ic_launcher, "SMSIM: Connected.", System.currentTimeMillis());
                 Intent notificationIntent = new Intent(getApplicationContext(), Settings.class);
                 PendingIntent pi = PendingIntent.getActivity(getApplicationContext(), 0, notificationIntent, PendingIntent.FLAG_NO_CREATE);
@@ -117,9 +126,17 @@ public class Settings extends AppCompatActivity {
             if (intent.getStringExtra("update").equals("disconn") && prefs.getBoolean("isConnected", false)) {
                 editor.putBoolean("isConnected", false);
                 editor.commit();
+
                 TextView status = (TextView) findViewById(R.id.status);
                 status.setText("Disconnected");
                 status.setTextColor(Color.RED);
+
+                TextView address = (TextView) findViewById(R.id.ipAddress);
+                address.setEnabled(true);
+
+                Button connect = (Button) findViewById(R.id.connect);
+                connect.setEnabled(true);
+
                 Notification not = new Notification(R.mipmap.ic_launcher, "SMSIM: Disconnected.", System.currentTimeMillis());
                 Intent notificationIntent = new Intent(context, Settings.class);
                 PendingIntent pi = PendingIntent.getActivity(context, 0, notificationIntent, PendingIntent.FLAG_NO_CREATE);
