@@ -36,7 +36,7 @@ public class Main extends Service {
                     while (true) {
                         try {
                             sender.sendMessage("Ping");
-                            Thread.sleep(300000);
+                            Thread.sleep(90000);
                         } catch (Exception e) {
                             updateConnectionStatus("disconn");
                             openConnection(ip);

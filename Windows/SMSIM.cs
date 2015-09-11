@@ -11,6 +11,7 @@ using System.ComponentModel;
 using System.Media;
 using System.Drawing;
 using System.IO;
+using System.Timers;
 
 namespace SMSIM
 {
@@ -20,6 +21,8 @@ namespace SMSIM
         public IDuplexStringMessageReceiver receiver;
         public String connectedDevice;
         public Dictionary<String, Conversation> openConversations = new Dictionary<string, Conversation>();
+        System.Timers.Timer pingTimer = new System.Timers.Timer();
+        Boolean ping = false;
 
         public SMSIM()
         {
@@ -38,6 +41,8 @@ namespace SMSIM
             IDuplexStringMessagesFactory aReceiverFactory = new DuplexStringMessagesFactory();
             receiver = aReceiverFactory.CreateDuplexStringMessageReceiver();
             receiver.RequestReceived += OnRequestReceived;
+            pingTimer.Elapsed += new ElapsedEventHandler(pingTimeout);
+            pingTimer.Interval = 120000;
             IMessagingSystemFactory aMessaging = new TcpMessagingSystemFactory();
             String localIP = LocalIPAddress();
             IDuplexInputChannel anInputChannel = aMessaging.CreateDuplexInputChannel("tcp://" + localIP + ":8060/");
@@ -48,12 +53,14 @@ namespace SMSIM
 
         private void OnRequestReceived(object sender, StringRequestReceivedEventArgs e)
         {
+            ping = true;
             Console.WriteLine(e.RequestMessage);
             receiver.SendResponseMessage(e.ResponseReceiverId, "Ack: " + e.RequestMessage);
             String[] input = e.RequestMessage.Split(':');
             if (input[0].Equals("Conn"))
             {
                 connectedDevice = e.ResponseReceiverId;
+                pingTimer.Enabled = true;
                 deviceName.Invoke(new MethodInvoker(delegate { deviceName.Text = input[1]; }));
                 contacts.Invoke(new MethodInvoker(delegate { contacts.Items.Clear(); }));
             }
@@ -99,6 +106,17 @@ namespace SMSIM
                     bw.RunWorkerAsync();
                 }
             }
+        }
+
+        private void pingTimeout(object source, ElapsedEventArgs e)
+        {
+            if (ping == false)
+            {
+                connectedDevice = null;
+                deviceName.Invoke(new MethodInvoker(delegate { deviceName.Text = "-"; }));
+                contacts.Invoke(new MethodInvoker(delegate { contacts.Items.Clear(); }));
+            }
+            ping = false;
         }
 
         private void contacts_doubleClick(object sender, MouseEventArgs e)
