@@ -4,18 +4,16 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 
 public class BootStarter extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
         if (intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED)) {
-            SharedPreferences prefs = context.getSharedPreferences("SMSIM", context.MODE_PRIVATE);
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
             if (prefs.contains("ip") && prefs.getBoolean("startOnBoot", false)) {
-                String ip = prefs.getString("ip", "");
-                Intent main = new Intent(context, Main.class);
-                main.putExtra("ip", ip);
-                context.startService(main);
+                context.startService(new Intent(context, Main.class));
             }
         }
     }
