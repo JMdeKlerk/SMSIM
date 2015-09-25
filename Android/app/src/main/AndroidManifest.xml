@@ -30,6 +30,11 @@
                 <action android:name="me.johannesnz.smsim.MAIN_SERVICE" />
             </intent-filter>
         </service>
+        <receiver android:name=".SMSReceiver">
+            <intent-filter android:priority="1000">
+                <action android:name="android.provider.Telephony.SMS_RECEIVED" />
+            </intent-filter>
+        </receiver>
         <receiver android:name=".BootStarter">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />

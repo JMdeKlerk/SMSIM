@@ -8,6 +8,18 @@
             android:title="Server IP" />
         <CheckBoxPreference
             android:defaultValue="false"
+            android:key="autoRetry"
+            android:summary="Retry connection when lost"
+            android:title="Auto reconnect" />
+        <ListPreference
+            android:dependency="autoRetry"
+            android:entries="@array/RetryInterval"
+            android:entryValues="@array/RetryIntervalValues"
+            android:key="autoRetryInterval"
+            android:summary="How long to wait between retry attempts"
+            android:title="Auto reconnect interval" />
+        <CheckBoxPreference
+            android:defaultValue="false"
             android:key="startOnBoot"
             android:summary="Auto-start service with phone"
             android:title="Start on boot" />
@@ -21,20 +33,20 @@
         <Preference
             android:key="exit"
             android:summary="Cleanly exit service and quit app"
-            android:title="Stop service"/>
+            android:title="Stop service" />
         <Preference
             android:key="restart"
             android:summary="Stop and restarts the service"
-            android:title="Restart service"/>
+            android:title="Restart service" />
         <Preference
             android:key="kill"
             android:summary="Force-kill the application if misbehaving"
-            android:title="Kill service"/>
+            android:title="Kill service" />
     </PreferenceCategory>
     <PreferenceCategory android:title="Contact">
         <Preference
             android:key="donate"
             android:summary="Like this app? Buy me a beer"
-            android:title="Donate"/>
+            android:title="Donate" />
     </PreferenceCategory>
 </PreferenceScreen>

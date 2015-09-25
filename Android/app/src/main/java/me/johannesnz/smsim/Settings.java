@@ -32,11 +32,11 @@ public class Settings extends AppCompatActivity implements OnSharedPreferenceCha
         public boolean onPreferenceClick(Preference pref) {
             switch (pref.getKey()) {
                 case ("exit"):
-                    Main.main.cleanQuit();
+                    Main.main.stopSelf();
                     break;
                 case ("restart"):
                     Main.main.stopSelf();
-                    context.startService(new Intent(context, Main.class));
+                    Settings.startMainService(context);
                     break;
                 case ("kill"):
                     android.os.Process.killProcess(android.os.Process.myPid());
@@ -49,20 +49,24 @@ public class Settings extends AppCompatActivity implements OnSharedPreferenceCha
         }
     }
 
+    public static void startMainService(final Context context) {
+        context.startService(new Intent(context, Main.class));
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getFragmentManager().beginTransaction().replace(android.R.id.content, new SettingsFragment()).commit();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         prefs.registerOnSharedPreferenceChangeListener(this);
-        startService(new Intent(this, Main.class));
+        startMainService(this);
     }
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
         if (key.equals("ip")) {
             Main.main.stopSelf();
-            startService(new Intent(this, Main.class));
+            startMainService(this);
         }
     }
 

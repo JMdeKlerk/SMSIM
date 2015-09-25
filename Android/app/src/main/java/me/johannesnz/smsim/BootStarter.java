@@ -13,7 +13,7 @@ public class BootStarter extends BroadcastReceiver {
         if (intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED)) {
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
             if (prefs.contains("ip") && prefs.getBoolean("startOnBoot", false)) {
-                context.startService(new Intent(context, Main.class));
+                Settings.startMainService(context);
             }
         }
     }

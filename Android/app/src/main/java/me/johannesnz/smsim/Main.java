@@ -3,10 +3,8 @@ package me.johannesnz.smsim;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Build;
@@ -15,7 +13,6 @@ import android.provider.ContactsContract;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.SmsManager;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
 import eneter.messaging.endpoints.stringmessages.DuplexStringMessagesFactory;
 import eneter.messaging.endpoints.stringmessages.IDuplexStringMessageSender;
@@ -31,8 +28,8 @@ public class Main extends Service {
     public static Main main;
 
     private SharedPreferences prefs;
-    private IDuplexStringMessageSender sender;
-    private BroadcastReceiver messageReceiver;
+    public static boolean connected;
+    private static IDuplexStringMessageSender sender;
 
     public Main() {
         main = this;
@@ -40,41 +37,40 @@ public class Main extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        showNotification("Service starting...", false);
-        prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        messageReceiver = new SMSReceiver(this);
-        IntentFilter smsFilter = new IntentFilter();
-        smsFilter.addAction("android.provider.Telephony.SMS_RECEIVED");
-        smsFilter.setPriority(IntentFilter.SYSTEM_HIGH_PRIORITY);
-        registerReceiver(messageReceiver, smsFilter);
         new Thread(new Runnable() {
             @Override
             public void run() {
-                final String ip = prefs.getString("ip", "");
-                final IDuplexStringMessagesFactory factory = new DuplexStringMessagesFactory();
-                final IMessagingSystemFactory messenger = new TcpMessagingSystemFactory();
-                sender = factory.createDuplexStringMessageSender();
-                try {
-                    IDuplexOutputChannel output = messenger.createDuplexOutputChannel("tcp://" + ip + ":8060/");
-                    sender.attachDuplexOutputChannel(output);
-                    sender.responseReceived().subscribe(new EventHandler<StringResponseReceivedEventArgs>() {
-                        @Override
-                        public void onEvent(Object o, StringResponseReceivedEventArgs response) {
-                            handleResponse(response.getResponseMessage());
-                        }
-                    });
-                    sendMessage("Conn:" + Build.MODEL);
-                    showNotification("Service is running.", true);
-                } catch (Exception ex) {
-                    showNotification("Connection failed. Tap to retry.", false);
-                    stopSelf();
-                }
+                if (!setUp()) connFail();
             }
         }).start();
         return START_STICKY;
     }
 
-    public void sendMessage(String message) {
+    private boolean setUp() {
+        prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        final String ip = prefs.getString("ip", "");
+        final IDuplexStringMessagesFactory factory = new DuplexStringMessagesFactory();
+        final IMessagingSystemFactory messenger = new TcpMessagingSystemFactory();
+        sender = factory.createDuplexStringMessageSender();
+        try {
+            IDuplexOutputChannel output = messenger.createDuplexOutputChannel("tcp://" + ip + ":8060/");
+            sender.attachDuplexOutputChannel(output);
+            sender.responseReceived().subscribe(new EventHandler<StringResponseReceivedEventArgs>() {
+                @Override
+                public void onEvent(Object o, StringResponseReceivedEventArgs response) {
+                    handleResponse(response.getResponseMessage());
+                }
+            });
+            sendMessage("Conn:" + Build.MODEL);
+            showNotification("Service is running.", true);
+            connected = true;
+            return true;
+        } catch (Exception ex) {
+            return false;
+        }
+    }
+
+    public static void sendMessage(String message) {
         try {
             sender.sendMessage(message);
         } catch (Exception ex) {
@@ -102,8 +98,7 @@ public class Main extends Service {
             sms.sendTextMessage(input[1], null, input[2], null, null);
         }
         if (message.equals("DC")) {
-            showNotification("Connection failed. Tap to retry.", false);
-            stopSelf();
+            connFail();
         }
     }
 
@@ -124,21 +119,23 @@ public class Main extends Service {
         nManager.notify(1, notification.build());
     }
 
-    public void cleanQuit() {
-        NotificationManager nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        sendMessage("DC");
-        nManager.cancel(1);
-        unregisterReceiver(messageReceiver);
-        sender.detachDuplexOutputChannel();
-        stopSelf();
-        System.exit(0);
+    private void connFail() {
+        connected = false;
+        if (prefs.getBoolean("autoRetry", false)) {
+            showNotification("Connection failed. Auto-retrying.", true);
+            while (!setUp())
+                android.os.SystemClock.sleep(Integer.parseInt(prefs.getString("autoRetryInterval", "300")) * 1000);
+        } else {
+            showNotification("Connection failed. Tap to retry.", false);
+        }
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        NotificationManager nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         sendMessage("DC");
-        unregisterReceiver(messageReceiver);
+        nManager.cancel(1);
         sender.detachDuplexOutputChannel();
     }
 
