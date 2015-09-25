@@ -13,6 +13,7 @@ import android.provider.ContactsContract;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.SmsManager;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 import eneter.messaging.endpoints.stringmessages.DuplexStringMessagesFactory;
 import eneter.messaging.endpoints.stringmessages.IDuplexStringMessageSender;
@@ -124,7 +125,11 @@ public class Main extends Service {
         if (prefs.getBoolean("autoRetry", false)) {
             showNotification("Connection failed. Auto-retrying.", true);
             while (!setUp())
-                android.os.SystemClock.sleep(Integer.parseInt(prefs.getString("autoRetryInterval", "300")) * 1000);
+                try {
+                    Thread.sleep(Integer.parseInt(prefs.getString("autoRetryInterval", "300")) * 1000);
+                } catch (InterruptedException e) {
+                    Log.i("Log", "Interrupted");
+                }
         } else {
             showNotification("Connection failed. Tap to retry.", false);
         }
@@ -134,8 +139,8 @@ public class Main extends Service {
     public void onDestroy() {
         super.onDestroy();
         NotificationManager nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        sendMessage("DC");
         nManager.cancel(1);
+        sendMessage("DC");
         sender.detachDuplexOutputChannel();
     }
 

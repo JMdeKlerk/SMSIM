@@ -1,5 +1,6 @@
 package me.johannesnz.smsim;
 
+import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -16,7 +17,7 @@ public class SMSReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (Main.connected) {
+        if (isMainServiceRunning(context) && Main.connected) {
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
             Bundle bundle = intent.getExtras();
             SmsMessage[] messages;
@@ -43,6 +44,17 @@ public class SMSReceiver extends BroadcastReceiver {
                 }
             }
         }
+    }
+
+    private boolean isMainServiceRunning(Context context) {
+        Class<?> serviceClass = Main.class;
+        ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

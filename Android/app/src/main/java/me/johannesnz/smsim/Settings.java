@@ -1,5 +1,6 @@
 package me.johannesnz.smsim;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.content.Intent;
@@ -15,7 +16,7 @@ public class Settings extends AppCompatActivity implements OnSharedPreferenceCha
 
     public static class SettingsFragment extends PreferenceFragment implements OnPreferenceClickListener {
 
-        private static Context context;
+        private static Activity activity;
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -25,7 +26,7 @@ public class Settings extends AppCompatActivity implements OnSharedPreferenceCha
             findPreference("restart").setOnPreferenceClickListener(this);
             findPreference("kill").setOnPreferenceClickListener(this);
             findPreference("donate").setOnPreferenceClickListener(this);
-            context = getActivity();
+            activity = getActivity();
         }
 
         @Override
@@ -33,10 +34,11 @@ public class Settings extends AppCompatActivity implements OnSharedPreferenceCha
             switch (pref.getKey()) {
                 case ("exit"):
                     Main.main.stopSelf();
+                    activity.finish();
                     break;
                 case ("restart"):
                     Main.main.stopSelf();
-                    Settings.startMainService(context);
+                    Settings.startMainService(activity);
                     break;
                 case ("kill"):
                     android.os.Process.killProcess(android.os.Process.myPid());
