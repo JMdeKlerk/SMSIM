@@ -82,7 +82,7 @@ namespace SMSIM
                     Stream stream = assembly.GetManifestResourceStream("SMSIM.unknown.png");
                     contact.displayPic = new Bitmap(stream);
                 }
-                contacts.Invoke(new MethodInvoker(delegate { contacts.Items.Add(contact); contacts.Sorted = true; }));
+                contacts.Invoke(new MethodInvoker(delegate { contacts.Items.Add(contact); contacts.Sorted = false; contacts.Sorted = true; }));
             }
             if (input[0].Equals("SMS"))
             {
@@ -149,7 +149,7 @@ namespace SMSIM
 
         private void SMSIM_FormClosing(object sender, FormClosingEventArgs e)
         {
-            receiver.SendResponseMessage(connectedDevice, "DC");
+            if (connectedDevice != null) receiver.SendResponseMessage(connectedDevice, "DC");
             receiver.DetachDuplexInputChannel();
         }
 

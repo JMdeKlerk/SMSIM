@@ -33,22 +33,22 @@ namespace SMSIM
                 e.DrawFocusRectangle();
             }
         }
-
-        // None of the following does anything
+        
         protected override void Sort()
         {
+            Console.WriteLine("Sort called");
             if (Items.Count > 1)
             {
                 bool swapped = true;
-                while (swapped)
+                while (swapped == true)
                 {
-                    swapped = false;
                     int counter = Items.Count - 1;
+                    swapped = false;
                     while (counter > 0)
                     {
-                        SMSIM.Contact contact = (SMSIM.Contact) Items[counter];
-                        SMSIM.Contact prevContact = (SMSIM.Contact)Items[counter - 1];
-                        if (true)
+                        SMSIM.Contact contact = (SMSIM.Contact)Items[counter];
+                        SMSIM.Contact compare = (SMSIM.Contact)Items[counter - 1];
+                        if (contact.name.CompareTo(compare.name) == -1)
                         {
                             object temp = Items[counter];
                             Items[counter] = Items[counter - 1];
