@@ -1,6 +1,7 @@
 package me.johannesnz.smsim;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.content.Context;
 import android.os.Bundle;
 import android.content.Intent;
@@ -33,11 +34,11 @@ public class Settings extends AppCompatActivity implements OnSharedPreferenceCha
         public boolean onPreferenceClick(Preference pref) {
             switch (pref.getKey()) {
                 case ("exit"):
-                    Main.main.stopSelf();
+                    stopMainService(activity);
                     activity.finish();
                     break;
                 case ("restart"):
-                    Main.main.stopSelf();
+                    stopMainService(activity);
                     Settings.startMainService(activity);
                     break;
                 case ("kill"):
@@ -51,10 +52,6 @@ public class Settings extends AppCompatActivity implements OnSharedPreferenceCha
         }
     }
 
-    public static void startMainService(final Context context) {
-        context.startService(new Intent(context, Main.class));
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,10 +61,29 @@ public class Settings extends AppCompatActivity implements OnSharedPreferenceCha
         startMainService(this);
     }
 
+    public static void startMainService(final Context context) {
+        if (!isMainServiceRunning(context)) context.startService(new Intent(context, Main.class));
+    }
+
+    public static void stopMainService(final Context context) {
+        if (isMainServiceRunning(context)) context.stopService(new Intent(context, Main.class));
+    }
+
+    public static boolean isMainServiceRunning(final Context context) {
+        Class<?> serviceClass = Main.class;
+        ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
         if (key.equals("ip")) {
-            Main.main.stopSelf();
+            stopMainService(this);
             startMainService(this);
         }
     }

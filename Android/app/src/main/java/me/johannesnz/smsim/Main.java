@@ -26,24 +26,20 @@ import eneter.net.system.EventHandler;
 
 public class Main extends Service {
 
-    public static Main main;
-
     private SharedPreferences prefs;
     public static boolean connected;
     private static IDuplexStringMessageSender sender;
-
-    public Main() {
-        main = this;
-    }
+    Thread mainThread;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        new Thread(new Runnable() {
+        mainThread = new Thread(new Runnable() {
             @Override
             public void run() {
                 if (!setUp()) connFail();
             }
-        }).start();
+        });
+        mainThread.start();
         return START_STICKY;
     }
 
@@ -124,12 +120,8 @@ public class Main extends Service {
         connected = false;
         if (prefs.getBoolean("autoRetry", false)) {
             showNotification("Connection failed. Auto-retrying.", true);
-            while (!setUp())
-                try {
-                    Thread.sleep(Integer.parseInt(prefs.getString("autoRetryInterval", "300")) * 1000);
-                } catch (InterruptedException e) {
-                    Log.i("Log", "Interrupted");
-                }
+            while (!setUp() && !Thread.interrupted())
+                android.os.SystemClock.sleep(Integer.parseInt(prefs.getString("autoRetryInterval", "300")) * 1000);
         } else {
             showNotification("Connection failed. Tap to retry.", false);
         }
@@ -138,6 +130,7 @@ public class Main extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        mainThread.interrupt();
         NotificationManager nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         nManager.cancel(1);
         sendMessage("DC");
