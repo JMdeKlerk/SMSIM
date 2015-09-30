@@ -1,4 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
+using System.IO;
+using System.Media;
 using System.Net;
 using System.Net.Sockets;
 using System.Windows.Forms;
@@ -6,19 +11,16 @@ using System.Windows.Forms;
 using Eneter.Messaging.EndPoints.StringMessages;
 using Eneter.Messaging.MessagingSystems.MessagingSystemBase;
 using Eneter.Messaging.MessagingSystems.TcpMessagingSystem;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Media;
-using System.Drawing;
-using System.IO;
+using System.Timers;
 
 namespace SMSIM
 {
     public partial class SMSIM : Form
     {
 
-        public IDuplexStringMessageReceiver receiver;
-        public String connectedDevice;
+        private IDuplexStringMessageReceiver receiver;
+        private String connectedDevice;
+        private bool ping = false;
         public Dictionary<String, Conversation> openConversations = new Dictionary<string, Conversation>();
 
         public SMSIM()
@@ -44,24 +46,35 @@ namespace SMSIM
             receiver.AttachDuplexInputChannel(anInputChannel);
             if (receiver.IsDuplexInputChannelAttached) ipAddress.Text = localIP;
             this.ActiveControl = label1;
+            System.Timers.Timer pingTimer = new System.Timers.Timer();
+            pingTimer.Elapsed += new ElapsedEventHandler(pingTimeout);
+            pingTimer.Interval = 40 * 1000;
+            pingTimer.Enabled = true;
+        }
+
+        public Boolean sendMessage(String message)
+        {
+            try
+            {
+                receiver.SendResponseMessage(connectedDevice, message);
+                return true;
+            }
+            catch (InvalidOperationException)
+            {
+                return false;
+            }
         }
 
         private void handleRequest(object sender, StringRequestReceivedEventArgs e)
         {
-            Console.WriteLine(e.RequestMessage);
-            receiver.SendResponseMessage(e.ResponseReceiverId, "Ack:" + e.RequestMessage);
+            ping = true;
             String[] input = e.RequestMessage.Split(':');
             if (input[0].Equals("Conn"))
             {
                 connectedDevice = e.ResponseReceiverId;
                 deviceName.Invoke(new MethodInvoker(delegate { deviceName.Text = input[1]; }));
                 contacts.Invoke(new MethodInvoker(delegate { contacts.Items.Clear(); }));
-            }
-            if (input[0].Equals("DC"))
-            {
-                connectedDevice = null;
-                deviceName.Invoke(new MethodInvoker(delegate { deviceName.Text = "-"; }));
-                contacts.Invoke(new MethodInvoker(delegate { contacts.Items.Clear(); }));
+                sendMessage("Req:Contacts");
             }
             if (input[0].Equals("Contact"))
             {
@@ -108,6 +121,24 @@ namespace SMSIM
                     bw.RunWorkerAsync();
                 }
             }
+            if (input[0].Equals("DC"))
+            {
+                connectedDevice = null;
+                deviceName.Invoke(new MethodInvoker(delegate { deviceName.Text = "-"; }));
+                contacts.Invoke(new MethodInvoker(delegate { contacts.Items.Clear(); }));
+            }
+        }
+
+        private void pingTimeout(object source, ElapsedEventArgs e)
+        {
+            if (!ping)
+            {
+                connectedDevice = null;
+                deviceName.Invoke(new MethodInvoker(delegate { deviceName.Text = "-"; }));
+                contacts.Invoke(new MethodInvoker(delegate { contacts.Items.Clear(); }));
+            }
+            ping = false;
+            if (connectedDevice != null) sendMessage("Ping");
         }
 
         private void contacts_doubleClick(object sender, MouseEventArgs e)
@@ -149,7 +180,7 @@ namespace SMSIM
 
         private void SMSIM_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (connectedDevice != null) receiver.SendResponseMessage(connectedDevice, "DC");
+            if (connectedDevice != null) sendMessage("DC");
             receiver.DetachDuplexInputChannel();
         }
 

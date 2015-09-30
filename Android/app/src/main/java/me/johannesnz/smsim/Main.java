@@ -1,5 +1,6 @@
 package me.johannesnz.smsim;
 
+import android.app.AlarmManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -13,7 +14,6 @@ import android.provider.ContactsContract;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.SmsManager;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
 import eneter.messaging.endpoints.stringmessages.DuplexStringMessagesFactory;
 import eneter.messaging.endpoints.stringmessages.IDuplexStringMessageSender;
@@ -26,10 +26,20 @@ import eneter.net.system.EventHandler;
 
 public class Main extends Service {
 
+    private static Main main;
+    private static Thread mainThread;
     private SharedPreferences prefs;
     public static boolean connected;
     private static IDuplexStringMessageSender sender;
-    Thread mainThread;
+    private static long lastPing;
+
+    public Main() {
+        main = this;
+    }
+
+    public static Main getInstance() {
+        return main;
+    }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -59,24 +69,28 @@ public class Main extends Service {
                 }
             });
             sendMessage("Conn:" + Build.MODEL);
-            showNotification("Service is running.", true);
             connected = true;
+            showNotification("Service is running.", true);
             return true;
         } catch (Exception ex) {
             return false;
         }
     }
 
-    public static void sendMessage(String message) {
+    public void sendMessage(String message) {
         try {
             sender.sendMessage(message);
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        } catch (Exception e) {
+            connFail();
         }
     }
 
     private void handleResponse(String message) {
-        if (message.startsWith("Ack:Conn")) {
+        lastPing = System.currentTimeMillis();
+        if (message.equals("Ping")) {
+            sendMessage("Pong");
+        }
+        if (message.equals("Req:Contacts")) {
             Cursor phones = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
             while (phones.moveToNext()) {
                 int phoneType = phones.getInt(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TYPE));
@@ -118,13 +132,10 @@ public class Main extends Service {
 
     private void connFail() {
         connected = false;
-        if (prefs.getBoolean("autoRetry", false)) {
-            showNotification("Connection failed. Auto-retrying.", true);
-            while (!setUp() && !Thread.interrupted())
-                android.os.SystemClock.sleep(Integer.parseInt(prefs.getString("autoRetryInterval", "300")) * 1000);
-        } else {
-            showNotification("Connection failed. Tap to retry.", false);
-        }
+        showNotification("Connection failed. Auto-retrying.", true);
+        while (!Thread.interrupted() && prefs.getBoolean("autoRetry", false) && !setUp())
+            android.os.SystemClock.sleep(Integer.parseInt(prefs.getString("autoRetryInterval", "300")) * 1000);
+        showNotification("Connection failed. Tap to retry.", false);
     }
 
     @Override

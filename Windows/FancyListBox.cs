@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Drawing;
-using System.IO;
-using System.Net;
 using System.Windows.Forms;
 
 namespace SMSIM
@@ -36,7 +33,6 @@ namespace SMSIM
         
         protected override void Sort()
         {
-            Console.WriteLine("Sort called");
             if (Items.Count > 1)
             {
                 bool swapped = true;

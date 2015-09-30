@@ -1,22 +1,18 @@
-﻿using Eneter.Messaging.EndPoints.StringMessages;
-using System;
+﻿using System;
 using System.Windows.Forms;
 
 namespace SMSIM
 {
     public partial class Conversation : Form
     {
-
-        private IDuplexStringMessageReceiver receiver;
+        
         private SMSIM parent;
-        private String device, name, number;
+        private String name, number;
 
         public Conversation(SMSIM parent, string[] input)
         {
             InitializeComponent();
             this.parent = parent;
-            this.receiver = parent.receiver;
-            this.device = parent.connectedDevice;
             this.name = input[1];
             this.number = input[2];
             ParseInput(input);
@@ -34,7 +30,7 @@ namespace SMSIM
 
         private void sendMessage(String message)
         {
-            receiver.SendResponseMessage(device, "SMS:" + this.number + ":" + message);
+            parent.sendMessage("SMS:" + this.number + ":" + message);
             string timestamp = "[" + DateTime.Now.ToString("HH:mm:ss") + "] ";
             messageBox.AppendText(timestamp + "You: " + message + "\n");
         }
@@ -49,5 +45,7 @@ namespace SMSIM
             sendMessage(entry.Text);
             entry.Text = "";
         }
+
     }
+
 }

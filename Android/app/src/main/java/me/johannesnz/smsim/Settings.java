@@ -39,7 +39,7 @@ public class Settings extends AppCompatActivity implements OnSharedPreferenceCha
                     break;
                 case ("restart"):
                     stopMainService(activity);
-                    Settings.startMainService(activity);
+                    startMainService(activity);
                     break;
                 case ("kill"):
                     android.os.Process.killProcess(android.os.Process.myPid());
@@ -58,7 +58,7 @@ public class Settings extends AppCompatActivity implements OnSharedPreferenceCha
         getFragmentManager().beginTransaction().replace(android.R.id.content, new SettingsFragment()).commit();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         prefs.registerOnSharedPreferenceChangeListener(this);
-        startMainService(this);
+        if (!prefs.getString("ip", "").equals("")) startMainService(this);
     }
 
     public static void startMainService(final Context context) {

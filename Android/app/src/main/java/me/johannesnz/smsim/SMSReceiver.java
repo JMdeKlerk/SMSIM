@@ -36,7 +36,7 @@ public class SMSReceiver extends BroadcastReceiver {
                     } catch (CursorIndexOutOfBoundsException e) {
                         displayName = "Unknown";
                     }
-                    Main.sendMessage("SMS:" + displayName + ":" + from + ":" + body);
+                    Main.getInstance().sendMessage("SMS:" + displayName + ":" + from + ":" + body);
                     if (prefs.getBoolean("suppressAlerts", false)) {
                         abortBroadcast();
                     }
