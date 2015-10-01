@@ -53,7 +53,7 @@
         <entry file="file://$PROJECT_DIR$/app/src/main/AndroidManifest.xml">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="39" column="36" selection-start-line="39" selection-start-column="36" selection-end-line="39" selection-end-column="36" />
+              <caret line="37" column="19" selection-start-line="37" selection-start-column="19" selection-end-line="37" selection-end-column="19" />
               <folding>
                 <element signature="e#698#716#0" expanded="true" />
                 <element signature="e#839#857#0" expanded="true" />
@@ -77,14 +77,12 @@
       <file leaf-file-name="Main.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app/src/main/java/me/johannesnz/smsim/Main.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.2231986">
-              <caret line="88" column="46" selection-start-line="88" selection-start-column="46" selection-end-line="88" selection-end-column="46" />
+            <state vertical-scroll-proportion="-1.5834798">
+              <caret line="76" column="39" selection-start-line="76" selection-start-column="39" selection-end-line="76" selection-end-column="39" />
               <folding>
                 <element signature="imports" expanded="true" />
-                <element signature="e#1427#1428#0" expanded="true" />
-                <element signature="e#1454#1455#0" expanded="true" />
-                <element signature="e#2448#2716#0" expanded="true" />
-                <element signature="e#2715#2716#0" expanded="true" />
+                <element signature="e#2644#2912#0" expanded="true" />
+                <element signature="e#2911#2912#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -94,7 +92,19 @@
         <entry file="file://$PROJECT_DIR$/app/src/main/java/me/johannesnz/smsim/SMSReceiver.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="32" column="36" selection-start-line="32" selection-start-column="36" selection-end-line="32" selection-end-column="36" />
+              <caret line="14" column="52" selection-start-line="14" selection-start-column="52" selection-end-line="14" selection-end-column="52" />
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="WakeupReceiver.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/src/main/java/me/johannesnz/smsim/WakeupReceiver.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="14" column="42" selection-start-line="14" selection-start-column="42" selection-end-line="14" selection-end-column="42" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -1565,10 +1575,11 @@
         <option value="$PROJECT_DIR$/app/src/main/java/me/johannesnz/smsim/BootStarter.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/me/johannesnz/smsim/PingAlarmReceiver.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/me/johannesnz/smsim/Message.java" />
-        <option value="$PROJECT_DIR$/app/src/main/java/me/johannesnz/smsim/SMSReceiver.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/me/johannesnz/smsim/PingAlarm.java" />
-        <option value="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" />
         <option value="$PROJECT_DIR$/app/src/main/java/me/johannesnz/smsim/Settings.java" />
+        <option value="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" />
+        <option value="$PROJECT_DIR$/app/src/main/java/me/johannesnz/smsim/SMSReceiver.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/me/johannesnz/smsim/WakeupReceiver.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/me/johannesnz/smsim/Main.java" />
       </list>
     </option>
@@ -1612,21 +1623,27 @@
       <sortByType />
     </navigator>
     <panes>
-      <pane id="Scope" />
-      <pane id="PackagesPane">
+      <pane id="ProjectPane">
         <subPane>
           <PATH>
             <PATH_ELEMENT>
               <option name="myItemId" value="SMSIM" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewProjectNode" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="SMSIM" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="app" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewModuleNode" />
+              <option name="myItemId" value="Android" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
         </subPane>
       </pane>
+      <pane id="Scratches" />
       <pane id="AndroidView">
         <subPane>
           <PATH>
@@ -1679,27 +1696,21 @@
           </PATH>
         </subPane>
       </pane>
-      <pane id="ProjectPane">
+      <pane id="PackagesPane">
         <subPane>
           <PATH>
             <PATH_ELEMENT>
               <option name="myItemId" value="SMSIM" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="SMSIM" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewProjectNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="Android" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+              <option name="myItemId" value="app" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PackageViewModuleNode" />
             </PATH_ELEMENT>
           </PATH>
         </subPane>
       </pane>
-      <pane id="Scratches" />
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -2023,10 +2034,8 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#1427#1428#0" expanded="true" />
-            <element signature="e#1454#1455#0" expanded="true" />
-            <element signature="e#2448#2716#0" expanded="true" />
-            <element signature="e#2715#2716#0" expanded="true" />
+            <element signature="e#2644#2912#0" expanded="true" />
+            <element signature="e#2911#2912#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -2075,10 +2084,8 @@
           <caret line="139" column="24" selection-start-line="139" selection-start-column="24" selection-end-line="139" selection-end-column="24" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#1427#1428#0" expanded="true" />
-            <element signature="e#1454#1455#0" expanded="true" />
-            <element signature="e#2448#2716#0" expanded="true" />
-            <element signature="e#2715#2716#0" expanded="true" />
+            <element signature="e#2644#2912#0" expanded="true" />
+            <element signature="e#2911#2912#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -2134,10 +2141,8 @@
           <caret line="39" column="46" selection-start-line="39" selection-start-column="46" selection-end-line="39" selection-end-column="46" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#1427#1428#0" expanded="true" />
-            <element signature="e#1454#1455#0" expanded="true" />
-            <element signature="e#2448#2716#0" expanded="true" />
-            <element signature="e#2715#2716#0" expanded="true" />
+            <element signature="e#2644#2912#0" expanded="true" />
+            <element signature="e#2911#2912#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -2176,10 +2181,8 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#1427#1428#0" expanded="true" />
-            <element signature="e#1454#1455#0" expanded="true" />
-            <element signature="e#2448#2716#0" expanded="true" />
-            <element signature="e#2715#2716#0" expanded="true" />
+            <element signature="e#2644#2912#0" expanded="true" />
+            <element signature="e#2911#2912#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -2201,10 +2204,8 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#1427#1428#0" expanded="true" />
-            <element signature="e#1454#1455#0" expanded="true" />
-            <element signature="e#2448#2716#0" expanded="true" />
-            <element signature="e#2715#2716#0" expanded="true" />
+            <element signature="e#2644#2912#0" expanded="true" />
+            <element signature="e#2911#2912#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -2226,10 +2227,8 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#1427#1428#0" expanded="true" />
-            <element signature="e#1454#1455#0" expanded="true" />
-            <element signature="e#2448#2716#0" expanded="true" />
-            <element signature="e#2715#2716#0" expanded="true" />
+            <element signature="e#2644#2912#0" expanded="true" />
+            <element signature="e#2911#2912#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -2251,10 +2250,8 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#1427#1428#0" expanded="true" />
-            <element signature="e#1454#1455#0" expanded="true" />
-            <element signature="e#2448#2716#0" expanded="true" />
-            <element signature="e#2715#2716#0" expanded="true" />
+            <element signature="e#2644#2912#0" expanded="true" />
+            <element signature="e#2911#2912#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -2276,10 +2273,8 @@
           <caret line="72" column="9" selection-start-line="72" selection-start-column="9" selection-end-line="72" selection-end-column="9" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#1427#1428#0" expanded="true" />
-            <element signature="e#1454#1455#0" expanded="true" />
-            <element signature="e#2448#2716#0" expanded="true" />
-            <element signature="e#2715#2716#0" expanded="true" />
+            <element signature="e#2644#2912#0" expanded="true" />
+            <element signature="e#2911#2912#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -2301,10 +2296,8 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#1427#1428#0" expanded="true" />
-            <element signature="e#1454#1455#0" expanded="true" />
-            <element signature="e#2448#2716#0" expanded="true" />
-            <element signature="e#2715#2716#0" expanded="true" />
+            <element signature="e#2644#2912#0" expanded="true" />
+            <element signature="e#2911#2912#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -2326,10 +2319,8 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#1427#1428#0" expanded="true" />
-            <element signature="e#1454#1455#0" expanded="true" />
-            <element signature="e#2448#2716#0" expanded="true" />
-            <element signature="e#2715#2716#0" expanded="true" />
+            <element signature="e#2644#2912#0" expanded="true" />
+            <element signature="e#2911#2912#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -2351,10 +2342,8 @@
           <caret line="75" column="91" selection-start-line="75" selection-start-column="91" selection-end-line="75" selection-end-column="91" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#1427#1428#0" expanded="true" />
-            <element signature="e#1454#1455#0" expanded="true" />
-            <element signature="e#2448#2716#0" expanded="true" />
-            <element signature="e#2715#2716#0" expanded="true" />
+            <element signature="e#2644#2912#0" expanded="true" />
+            <element signature="e#2911#2912#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -2376,10 +2365,8 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#1427#1428#0" expanded="true" />
-            <element signature="e#1454#1455#0" expanded="true" />
-            <element signature="e#2448#2716#0" expanded="true" />
-            <element signature="e#2715#2716#0" expanded="true" />
+            <element signature="e#2644#2912#0" expanded="true" />
+            <element signature="e#2911#2912#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -2457,27 +2444,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/AndroidManifest.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="39" column="36" selection-start-line="39" selection-start-column="36" selection-end-line="39" selection-end-column="36" />
-          <folding>
-            <element signature="e#698#716#0" expanded="true" />
-            <element signature="e#839#857#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/me/johannesnz/smsim/SMSReceiver.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="32" column="36" selection-start-line="32" selection-start-column="36" selection-end-line="32" selection-end-column="36" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/me/johannesnz/smsim/Settings.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -2488,16 +2454,45 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/me/johannesnz/smsim/Main.java">
+    <entry file="file://$PROJECT_DIR$/app/src/main/AndroidManifest.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.2231986">
-          <caret line="88" column="46" selection-start-line="88" selection-start-column="46" selection-end-line="88" selection-end-column="46" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="37" column="19" selection-start-line="37" selection-start-column="19" selection-end-line="37" selection-end-column="19" />
+          <folding>
+            <element signature="e#698#716#0" expanded="true" />
+            <element signature="e#839#857#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/me/johannesnz/smsim/SMSReceiver.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="14" column="52" selection-start-line="14" selection-start-column="52" selection-end-line="14" selection-end-column="52" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#1427#1428#0" expanded="true" />
-            <element signature="e#1454#1455#0" expanded="true" />
-            <element signature="e#2448#2716#0" expanded="true" />
-            <element signature="e#2715#2716#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/me/johannesnz/smsim/WakeupReceiver.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="14" column="42" selection-start-line="14" selection-start-column="42" selection-end-line="14" selection-end-column="42" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/me/johannesnz/smsim/Main.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-1.5834798">
+          <caret line="76" column="39" selection-start-line="76" selection-start-column="39" selection-end-line="76" selection-end-column="39" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#2644#2912#0" expanded="true" />
+            <element signature="e#2911#2912#0" expanded="true" />
           </folding>
         </state>
       </provider>

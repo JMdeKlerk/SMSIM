@@ -1,11 +1,11 @@
 package me.johannesnz.smsim;
 
-import android.app.AlarmManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Build;
@@ -28,10 +28,12 @@ public class Main extends Service {
 
     private static Main main;
     private static Thread mainThread;
-    private SharedPreferences prefs;
-    public static boolean connected;
+    private WakeupReceiver lastPingWakeupCheck;
     private static IDuplexStringMessageSender sender;
-    private static long lastPing;
+    private SharedPreferences prefs;
+
+    public static boolean connected;
+    public static long lastPing;
 
     public Main() {
         main = this;
@@ -43,6 +45,8 @@ public class Main extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        lastPingWakeupCheck = new WakeupReceiver();
+        registerReceiver(lastPingWakeupCheck, new IntentFilter((Intent.ACTION_SCREEN_ON)));
         mainThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -70,7 +74,7 @@ public class Main extends Service {
             });
             sendMessage("Conn:" + Build.MODEL);
             connected = true;
-            showNotification("Service is running.", true);
+            showNotification("Connected.", true);
             return true;
         } catch (Exception ex) {
             return false;
@@ -130,12 +134,14 @@ public class Main extends Service {
         nManager.notify(1, notification.build());
     }
 
-    private void connFail() {
+    public void connFail() {
         connected = false;
-        showNotification("Connection failed. Auto-retrying.", true);
-        while (!Thread.interrupted() && prefs.getBoolean("autoRetry", false) && !setUp())
+        while (!Thread.interrupted() && prefs.getBoolean("autoRetry", false) && !setUp()) {
+            showNotification("Connection failed. Auto-retrying.", true);
             android.os.SystemClock.sleep(Integer.parseInt(prefs.getString("autoRetryInterval", "300")) * 1000);
-        showNotification("Connection failed. Tap to retry.", false);
+        }
+        if (!prefs.getBoolean("autoRetry", false))
+            showNotification("Connection failed. Tap to retry.", false);
     }
 
     @Override
@@ -146,6 +152,7 @@ public class Main extends Service {
         nManager.cancel(1);
         sendMessage("DC");
         sender.detachDuplexOutputChannel();
+        unregisterReceiver(lastPingWakeupCheck);
     }
 
     @Override
