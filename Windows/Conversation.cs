@@ -24,7 +24,13 @@ namespace SMSIM
             if (input.Length > 3)
             {
                 string timestamp = "[" + DateTime.Now.ToString("HH:mm:ss") + "] ";
-                messageBox.AppendText(timestamp + input[1] + ": " + input[3] + "\n");
+                messageBox.AppendText(timestamp + input[1] + ": ");
+                for (int i = 3; i < input.Length; i++)
+                {
+                    messageBox.AppendText(input[i]);
+                    if (i < input.Length - 1) messageBox.AppendText(":");
+                }
+                messageBox.AppendText("\n");
             }
         }
 

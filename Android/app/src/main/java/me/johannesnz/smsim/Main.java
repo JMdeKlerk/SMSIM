@@ -45,7 +45,7 @@ public class Main extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        lastPingWakeupCheck = new WakeupReceiver();
+        lastPingWakeupCheck = new WakeupReceiver(this);
         registerReceiver(lastPingWakeupCheck, new IntentFilter((Intent.ACTION_SCREEN_ON)));
         mainThread = new Thread(new Runnable() {
             @Override
@@ -147,12 +147,17 @@ public class Main extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        mainThread.interrupt();
         NotificationManager nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         nManager.cancel(1);
-        sendMessage("DC");
+        if (connected) new Thread(new Runnable() {
+            @Override
+            public void run() {
+                sendMessage("DC");
+            }
+        }).start();
         sender.detachDuplexOutputChannel();
         unregisterReceiver(lastPingWakeupCheck);
+        mainThread.interrupt();
     }
 
     @Override

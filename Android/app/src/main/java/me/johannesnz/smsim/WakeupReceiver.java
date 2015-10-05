@@ -6,13 +6,16 @@ import android.content.Intent;
 
 public class WakeupReceiver extends BroadcastReceiver {
 
-    public WakeupReceiver() {
+    private Main main;
+
+    public WakeupReceiver(Main parent) {
+        main = parent;
     }
 
     @Override
     public void onReceive(Context context, Intent intent) {
         if ((System.currentTimeMillis() - Main.lastPing) > 60000) {
-            Main.getInstance().connFail();
+            main.connFail();
         }
     }
 
