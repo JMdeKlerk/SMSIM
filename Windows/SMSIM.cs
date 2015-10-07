@@ -81,7 +81,8 @@ namespace SMSIM
                 Contact contact = new Contact();
                 contact.name = input[1];
                 contact.number = input[2];
-                if (!input[3].Equals("null"))
+                // Disabled for now; breaks everything
+                if (/*!input[3].Equals("null")*/ false)
                 {
                     WebRequest request = WebRequest.Create(input[3]);
                     WebResponse response = request.GetResponse();
