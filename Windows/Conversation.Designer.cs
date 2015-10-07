@@ -76,6 +76,7 @@
             this.Controls.Add(this.entry);
             this.Controls.Add(this.send);
             this.Name = "Conversation";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Conversation";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Conversation_FormClosing);
             this.ResumeLayout(false);
