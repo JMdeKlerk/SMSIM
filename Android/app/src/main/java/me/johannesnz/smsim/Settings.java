@@ -2,6 +2,7 @@ package me.johannesnz.smsim;
 
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.content.Intent;
@@ -40,9 +41,6 @@ public class Settings extends AppCompatActivity implements OnSharedPreferenceCha
                 case ("restart"):
                     stopMainService(activity);
                     startMainService(activity);
-                    break;
-                case ("kill"):
-                    android.os.Process.killProcess(android.os.Process.myPid());
                     break;
                 case ("donate"):
                     // TODO

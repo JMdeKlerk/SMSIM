@@ -1,19 +1,29 @@
 package me.johannesnz.smsim;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.IBinder;
+import android.os.Looper;
 import android.provider.ContactsContract;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.SmsManager;
 import android.preference.PreferenceManager;
+import android.util.Log;
+import android.view.WindowManager;
+
+import java.io.InputStream;
 
 import eneter.messaging.endpoints.stringmessages.DuplexStringMessagesFactory;
 import eneter.messaging.endpoints.stringmessages.IDuplexStringMessageSender;
@@ -26,21 +36,17 @@ import eneter.net.system.EventHandler;
 
 public class Main extends Service {
 
-    private static Main main;
+    public static Main main;
+    public static boolean connected;
+    public static long lastPing;
+
     private static Thread mainThread;
     private WakeupReceiver lastPingWakeupCheck;
     private static IDuplexStringMessageSender sender;
     private SharedPreferences prefs;
 
-    public static boolean connected;
-    public static long lastPing;
-
     public Main() {
         main = this;
-    }
-
-    public static Main getInstance() {
-        return main;
     }
 
     @Override
@@ -72,8 +78,9 @@ public class Main extends Service {
                     handleResponse(response.getResponseMessage());
                 }
             });
-            sendMessage("Conn:" + Build.MODEL);
             connected = true;
+            sendMessage("Version");
+            sendMessage("Conn:" + Build.MODEL);
             showNotification("Connected.", true);
             return true;
         } catch (Exception ex) {
@@ -94,6 +101,12 @@ public class Main extends Service {
         if (message.equals("Ping")) {
             sendMessage("Pong");
         }
+        if (message.startsWith("Version:")) {
+            String version = message.split(":")[1];
+            if (version.equals("1.0")) {
+
+            }
+        }
         if (message.equals("Req:Contacts")) {
             Cursor phones = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
             while (phones.moveToNext()) {
@@ -101,8 +114,15 @@ public class Main extends Service {
                 if (phoneType == ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE) {
                     String name = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
                     String phoneNumber = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                    String pic = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.PHOTO_URI));
-                    sendMessage("Contact:" + name + ":" + phoneNumber + ":" + pic);
+                    String contactID = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.CONTACT_ID));
+                    InputStream inputStream = ContactsContract.Contacts.openContactPhotoInputStream(getContentResolver(), ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, new Long(contactID)));
+                    if (inputStream != null) {
+                        Bitmap photo = BitmapFactory.decodeStream(inputStream);
+                        Log.i("Log", String.valueOf(photo));
+                        sendMessage("Contact:" + name + ":" + phoneNumber + ":" + photo.toString());
+                    } else {
+                        sendMessage("Contact:" + name + ":" + phoneNumber);
+                    }
                 }
             }
             phones.close();
@@ -111,24 +131,24 @@ public class Main extends Service {
             String[] input = message.split(":");
             SmsManager sms = SmsManager.getDefault();
             sms.sendTextMessage(input[1], null, input[2], null, null);
+            sendMessage("Success:" + message);
         }
         if (message.equals("DC")) {
             connFail();
         }
     }
 
-    private void showNotification(String message, boolean persistent) {
+    private void showNotification(String message, boolean canCancel) {
         NotificationCompat.Builder notification = new NotificationCompat.Builder(this);
-        notification.setSmallIcon(R.mipmap.ic_launcher);
+        if (connected) notification.setSmallIcon(R.mipmap.ic_launcher);
+        else notification.setSmallIcon(R.mipmap.ic_launcher); // TODO Change to a red icon
         notification.setContentTitle("SMS Messenger");
         notification.setContentText(message);
-        notification.setOngoing(persistent);
-        if (!persistent) {
-            Intent restart = new Intent(this, Main.class);
-            PendingIntent pi = PendingIntent.getService(this, 0, restart, 0);
-            notification.setContentIntent(pi);
-            notification.setAutoCancel(true);
-        }
+        notification.setOngoing(!canCancel);
+        Intent restart = new Intent(this, Main.class);
+        PendingIntent pi = PendingIntent.getService(this, 0, restart, 0);
+        notification.setContentIntent(pi);
+        notification.setAutoCancel(true);
         NotificationManager nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         nManager.cancel(1);
         nManager.notify(1, notification.build());

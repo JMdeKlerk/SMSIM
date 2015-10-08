@@ -38,10 +38,6 @@
             android:key="restart"
             android:summary="Stop and restarts the service"
             android:title="Restart service" />
-        <Preference
-            android:key="kill"
-            android:summary="Force-kill the application if misbehaving"
-            android:title="Kill service" />
     </PreferenceCategory>
     <PreferenceCategory android:title="Contact">
         <Preference

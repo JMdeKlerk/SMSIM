@@ -69,6 +69,11 @@ namespace SMSIM
         {
             ping = true;
             String[] input = e.RequestMessage.Split(':');
+            if (input[0].Equals("Version"))
+            {
+                connectedDevice = e.ResponseReceiverId;
+                sendMessage("Version:1.0");
+            }
             if (input[0].Equals("Conn"))
             {
                 connectedDevice = e.ResponseReceiverId;
