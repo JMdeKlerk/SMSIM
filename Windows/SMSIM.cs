@@ -12,12 +12,14 @@ using Eneter.Messaging.EndPoints.StringMessages;
 using Eneter.Messaging.MessagingSystems.MessagingSystemBase;
 using Eneter.Messaging.MessagingSystems.TcpMessagingSystem;
 using System.Timers;
+using System.Threading;
 
 namespace SMSIM
 {
     public partial class SMSIM : Form
     {
 
+        private static int id = 0;
         private IDuplexStringMessageReceiver receiver;
         private String connectedDevice;
         private bool ping = false;
@@ -56,6 +58,7 @@ namespace SMSIM
         {
             try
             {
+                message = Interlocked.Increment(ref id).ToString() + ":" + message;
                 receiver.SendResponseMessage(connectedDevice, message);
                 return true;
             }
@@ -68,11 +71,13 @@ namespace SMSIM
         private void handleRequest(object sender, StringRequestReceivedEventArgs e)
         {
             ping = true;
+            Console.WriteLine(e.RequestMessage);
             String[] input = e.RequestMessage.Split(':');
             if (input[0].Equals("Version"))
             {
                 connectedDevice = e.ResponseReceiverId;
                 sendMessage("Version:1.0");
+                connectedDevice = null;
             }
             if (input[0].Equals("Conn"))
             {

@@ -14,8 +14,8 @@ public class WakeupReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        if ((System.currentTimeMillis() - Main.lastPing) > 60000) {
-            main.connFail();
+        if (main.connected && (System.currentTimeMillis() - Main.lastPing) > 60000) {
+            main.connFail(true);
         }
     }
 

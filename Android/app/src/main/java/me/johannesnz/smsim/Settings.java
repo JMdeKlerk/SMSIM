@@ -26,7 +26,6 @@ public class Settings extends AppCompatActivity implements OnSharedPreferenceCha
             addPreferencesFromResource(R.xml.preferences);
             findPreference("exit").setOnPreferenceClickListener(this);
             findPreference("restart").setOnPreferenceClickListener(this);
-            findPreference("kill").setOnPreferenceClickListener(this);
             findPreference("donate").setOnPreferenceClickListener(this);
             activity = getActivity();
         }
