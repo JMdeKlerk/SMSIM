@@ -1,9 +1,10 @@
 package me.johannesnz.smsim;
 
 import android.app.Activity;
-import android.app.ActivityManager;
-import android.app.AlertDialog;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.content.Intent;
 import android.preference.Preference;
@@ -12,9 +13,16 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 
+import eneter.messaging.endpoints.stringmessages.IDuplexStringMessageSender;
+
 public class Settings extends AppCompatActivity implements OnSharedPreferenceChangeListener {
+
+    public static boolean connected;
+    public static IDuplexStringMessageSender sender;
+    public static WakeupReceiver lastPingWakeupCheck;
 
     public static class SettingsFragment extends PreferenceFragment implements OnPreferenceClickListener {
 
@@ -34,12 +42,12 @@ public class Settings extends AppCompatActivity implements OnSharedPreferenceCha
         public boolean onPreferenceClick(Preference pref) {
             switch (pref.getKey()) {
                 case ("exit"):
-                    stopMainService(activity);
+                    Settings.disconnect(activity);
                     activity.finish();
                     break;
                 case ("restart"):
-                    stopMainService(activity);
-                    startMainService(activity);
+                    Settings.disconnect(activity);
+                    Settings.connect(activity);
                     break;
                 case ("donate"):
                     // TODO
@@ -51,37 +59,60 @@ public class Settings extends AppCompatActivity implements OnSharedPreferenceCha
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+        lastPingWakeupCheck = new WakeupReceiver();
+        registerReceiver(lastPingWakeupCheck, new IntentFilter((Intent.ACTION_SCREEN_ON)));
         getFragmentManager().beginTransaction().replace(android.R.id.content, new SettingsFragment()).commit();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         prefs.registerOnSharedPreferenceChangeListener(this);
-        if (!prefs.getString("ip", "").equals("")) startMainService(this);
+        if (!prefs.getString("ip", "").equals("")) connect(this);
+        super.onCreate(savedInstanceState);
     }
 
-    public static void startMainService(final Context context) {
-        if (!isMainServiceRunning(context)) context.startService(new Intent(context, Main.class));
+    public static void connect(Context context) {
+        Intent intent = new Intent(context, Main.class);
+        intent.putExtra("command", "connect");
+        context.startService(intent);
     }
 
-    public static void stopMainService(final Context context) {
-        if (isMainServiceRunning(context)) context.stopService(new Intent(context, Main.class));
+    public static void sendMessage(Context context, String message) {
+        Intent intent = new Intent(context, Main.class);
+        intent.putExtra("command", "send");
+        intent.putExtra("data", message);
+        context.startService(intent);
     }
 
-    public static boolean isMainServiceRunning(final Context context) {
-        Class<?> serviceClass = Main.class;
-        ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (serviceClass.getName().equals(service.service.getClassName())) {
-                return true;
-            }
-        }
-        return false;
+    public static void disconnect(Context context) {
+        Intent intent = new Intent(context, Main.class);
+        intent.putExtra("command", "disconnect");
+        context.startService(intent);
+    }
+
+    public static void showNotification(Context context, int id, String message, boolean onGoing) {
+        NotificationCompat.Builder notification = new NotificationCompat.Builder(context);
+        notification.setContentTitle("SMS Messenger");
+        notification.setContentText(message);
+        if (connected) notification.setSmallIcon(R.mipmap.ic_launcher);
+        else notification.setSmallIcon(R.mipmap.ic_launcher); // TODO Change to a red icon
+        notification.setOngoing(onGoing);
+        // TODO Tap to restart
+        NotificationManager nManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        nManager.notify(id, notification.build());
+    }
+
+    @Override
+    protected void onDestroy() {
+        NotificationManager nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        nManager.cancel(1);
+        sender.detachDuplexOutputChannel();
+        unregisterReceiver(lastPingWakeupCheck);
+        super.onDestroy();
     }
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
         if (key.equals("ip")) {
-            stopMainService(this);
-            startMainService(this);
+            disconnect(this);
+            connect(this);
         }
     }
 
