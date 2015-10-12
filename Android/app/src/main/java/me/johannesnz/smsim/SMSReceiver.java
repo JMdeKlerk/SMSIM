@@ -16,7 +16,7 @@ public class SMSReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (Settings.connected) {
+        if (Main.connected) {
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
             Bundle bundle = intent.getExtras();
             SmsMessage[] messages;
@@ -36,7 +36,7 @@ public class SMSReceiver extends BroadcastReceiver {
                     } catch (CursorIndexOutOfBoundsException e) {
                         displayName = "Unknown";
                     }
-                    Settings.sendMessage(context, "SMS:" + displayName + ":" + from + ":" + body);
+                    Main.sendMessage(context, "SMS:" + displayName + ":" + from + ":" + body);
                     if (prefs.getBoolean("suppressAlerts", false)) {
                         abortBroadcast();
                     }

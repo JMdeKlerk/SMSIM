@@ -1,129 +1,118 @@
 package me.johannesnz.smsim;
 
-import android.app.IntentService;
-import android.content.ContentUris;
+import android.app.Activity;
+import android.app.NotificationManager;
+import android.content.Context;
+import android.content.IntentFilter;
+import android.os.Bundle;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.os.Build;
-import android.provider.ContactsContract;
-import android.telephony.SmsManager;
+import android.preference.Preference;
+import android.preference.Preference.OnPreferenceClickListener;
+import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
-import android.util.Log;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.support.v4.app.NotificationCompat;
+import android.support.v7.app.AppCompatActivity;
 
-import java.io.InputStream;
+import eneter.messaging.endpoints.stringmessages.IDuplexStringMessageSender;
 
-import eneter.messaging.endpoints.stringmessages.DuplexStringMessagesFactory;
-import eneter.messaging.endpoints.stringmessages.IDuplexStringMessagesFactory;
-import eneter.messaging.endpoints.stringmessages.StringResponseReceivedEventArgs;
-import eneter.messaging.messagingsystems.messagingsystembase.IDuplexOutputChannel;
-import eneter.messaging.messagingsystems.messagingsystembase.IMessagingSystemFactory;
-import eneter.messaging.messagingsystems.tcpmessagingsystem.TcpMessagingSystemFactory;
-import eneter.net.system.EventHandler;
+public class Main extends AppCompatActivity implements OnSharedPreferenceChangeListener {
 
-public class Main extends IntentService {
+    public static boolean connected;
+    public static IDuplexStringMessageSender sender;
+    public static WakeupReceiver lastPingWakeupCheck;
 
-    public static long lastPing;
-    private SharedPreferences prefs;
+    public static class SettingsFragment extends PreferenceFragment implements OnPreferenceClickListener {
 
-    public Main() {
-        super("Main");
+        private static Activity activity;
+
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            addPreferencesFromResource(R.xml.preferences);
+            findPreference("exit").setOnPreferenceClickListener(this);
+            findPreference("restart").setOnPreferenceClickListener(this);
+            findPreference("donate").setOnPreferenceClickListener(this);
+            activity = getActivity();
+        }
+
+        @Override
+        public boolean onPreferenceClick(Preference pref) {
+            switch (pref.getKey()) {
+                case ("exit"):
+                    Main.disconnect(activity);
+                    activity.finish();
+                    break;
+                case ("restart"):
+                    Main.disconnect(activity);
+                    Main.connect(activity);
+                    break;
+                case ("donate"):
+                    // TODO
+                    break;
+            }
+            return true;
+        }
     }
 
     @Override
-    public void onHandleIntent(Intent intent) {
-        String command = intent.getStringExtra("command");
-        switch (command) {
-            case "connect":
-                if (!setUp()) connFail();
-                break;
-            case "send":
-                String data = intent.getStringExtra("data");
-                sendMessage(data);
-                break;
-            case "disconnect":
-                break;
-        }
+    protected void onCreate(Bundle savedInstanceState) {
+        lastPingWakeupCheck = new WakeupReceiver();
+        registerReceiver(lastPingWakeupCheck, new IntentFilter((Intent.ACTION_SCREEN_ON)));
+        getFragmentManager().beginTransaction().replace(android.R.id.content, new SettingsFragment()).commit();
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        prefs.registerOnSharedPreferenceChangeListener(this);
+        if (!prefs.getString("ip", "").equals("")) connect(this);
+        super.onCreate(savedInstanceState);
     }
 
-    private boolean setUp() {
-        prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        final String ip = prefs.getString("ip", "");
-        final IDuplexStringMessagesFactory factory = new DuplexStringMessagesFactory();
-        final IMessagingSystemFactory messenger = new TcpMessagingSystemFactory();
-        Settings.sender = factory.createDuplexStringMessageSender();
-        try {
-            IDuplexOutputChannel output = messenger.createDuplexOutputChannel("tcp://" + ip + ":8060/");
-            Settings.sender.attachDuplexOutputChannel(output);
-            Settings.sender.responseReceived().subscribe(new EventHandler<StringResponseReceivedEventArgs>() {
-                @Override
-                public void onEvent(Object o, StringResponseReceivedEventArgs response) {
-                    handleResponse(response.getResponseMessage());
-                }
-            });
-            sendMessage("Version");
-            Settings.connected = true;
-            Settings.showNotification(this, 1, "Connected.", true);
-            return true;
-        } catch (Exception ex) {
-            return false;
-        }
+    public static void connect(Context context) {
+        Intent intent = new Intent(context, CommService.class);
+        intent.putExtra("command", "connect");
+        context.startService(intent);
     }
 
-    private void sendMessage(String message) {
-        try {
-            Settings.sender.sendMessage(message);
-        } catch (Exception e) {
-            connFail();
-        }
+    public static void sendMessage(Context context, String message) {
+        Intent intent = new Intent(context, CommService.class);
+        intent.putExtra("command", "send");
+        intent.putExtra("data", message);
+        context.startService(intent);
     }
 
-    private void handleResponse(String message) {
-        lastPing = System.currentTimeMillis();
-        Log.i("Log", message);
-        if (message.substring(2).equals("Ping")) {
-            sendMessage("Pong");
-        }
-        if (message.substring(2).startsWith("Version:")) {
-            String version = message.split(":")[2];
-            if (version.equals("1.0")) sendMessage("Conn:" + Build.MODEL);
-            else connFail();
-        }
-        if (message.substring(2).equals("Req:Contacts")) {
-            Cursor phones = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
-            while (phones.moveToNext()) {
-                int phoneType = phones.getInt(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TYPE));
-                if (phoneType == ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE) {
-                    String name = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
-                    String phoneNumber = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                    String contactID = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.CONTACT_ID));
-                    InputStream inputStream = ContactsContract.Contacts.openContactPhotoInputStream(getContentResolver(), ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, new Long(contactID)));
-                    if (inputStream != null) {
-                        Bitmap photo = BitmapFactory.decodeStream(inputStream);
-                        sendMessage("Contact:" + name + ":" + phoneNumber + ":" + photo.toString());
-                    } else {
-                        sendMessage("Contact:" + name + ":" + phoneNumber);
-                    }
-                }
-            }
-            phones.close();
-        }
-        if (message.substring(2).startsWith("SMS:")) {
-            String[] input = message.split(":");
-            SmsManager sms = SmsManager.getDefault();
-            sms.sendTextMessage(input[2], null, input[3], null, null);
-            sendMessage("Success:" + input[0]);
-        }
-        if (message.substring(2).equals("DC")) {
-            connFail();
-        }
+    public static void disconnect(Context context) {
+        Intent intent = new Intent(context, CommService.class);
+        intent.putExtra("command", "disconnect");
+        context.startService(intent);
     }
 
-    public void connFail() {
-        Settings.connected = false;
-        Settings.sender.detachDuplexOutputChannel();
+    public static void showNotification(Context context, int id, String message, boolean onGoing) {
+        NotificationCompat.Builder notification = new NotificationCompat.Builder(context);
+        notification.setContentTitle("SMS Messenger");
+        notification.setContentText(message);
+        if (connected) notification.setSmallIcon(R.mipmap.ic_launcher);
+        else notification.setSmallIcon(R.mipmap.ic_launcher); // TODO Change to a red icon
+        notification.setOngoing(onGoing);
+        // TODO Tap to restart
+        NotificationManager nManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        nManager.notify(id, notification.build());
+    }
+
+    @Override
+    protected void onDestroy() {
+        NotificationManager nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        nManager.cancel(1);
+        sender.detachDuplexOutputChannel();
+        unregisterReceiver(lastPingWakeupCheck);
+        super.onDestroy();
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+        if (key.equals("ip")) {
+            disconnect(this);
+            connect(this);
+        }
     }
 
 }

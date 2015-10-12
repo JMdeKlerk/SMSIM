@@ -12,8 +12,8 @@ public class WakeupReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (Settings.connected && (System.currentTimeMillis() - Main.lastPing) > 60000) {
-            Settings.disconnect(context);
+        if (Main.connected && (System.currentTimeMillis() - CommService.lastPing) > 60000) {
+            Main.disconnect(context);
         }
     }
 
