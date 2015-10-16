@@ -50,7 +50,7 @@ namespace SMSIM
             this.ActiveControl = label1;
             System.Timers.Timer pingTimer = new System.Timers.Timer();
             pingTimer.Elapsed += new ElapsedEventHandler(pingTimeout);
-            pingTimer.Interval = 40 * 1000;
+            pingTimer.Interval = 1000 * 60 * 15;
             pingTimer.Enabled = true;
         }
 
@@ -71,7 +71,6 @@ namespace SMSIM
         private void handleRequest(object sender, StringRequestReceivedEventArgs e)
         {
             ping = true;
-            Console.WriteLine(e.RequestMessage);
             String[] input = e.RequestMessage.Split(':');
             if (input[0].Equals("Version"))
             {
@@ -84,7 +83,7 @@ namespace SMSIM
                 connectedDevice = e.ResponseReceiverId;
                 deviceName.Invoke(new MethodInvoker(delegate { deviceName.Text = input[1]; }));
                 contacts.Invoke(new MethodInvoker(delegate { contacts.Items.Clear(); }));
-                sendMessage("Req:Contacts");
+                sendMessage("Contacts");
             }
             if (input[0].Equals("Contact"))
             {

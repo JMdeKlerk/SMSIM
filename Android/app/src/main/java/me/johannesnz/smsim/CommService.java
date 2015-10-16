@@ -1,12 +1,17 @@
 package me.johannesnz.smsim;
 
+import android.app.AlarmManager;
 import android.app.IntentService;
+import android.app.PendingIntent;
 import android.content.ContentUris;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.provider.ContactsContract;
 import android.telephony.SmsManager;
@@ -25,34 +30,36 @@ import eneter.net.system.EventHandler;
 
 public class CommService extends IntentService {
 
-    public static long lastPing;
-    private SharedPreferences prefs;
-
     public CommService() {
         super("CommService");
     }
 
     @Override
     public void onHandleIntent(Intent intent) {
-        String command = intent.getStringExtra("command");
+        String data, command = intent.getStringExtra("command");
         switch (command) {
             case "connect":
-                if (!setUp()) connFail();
+                if (!setUp()) connFail("CONNECTION REFUSED");
                 break;
             case "send":
-                String data = intent.getStringExtra("data");
+                data = intent.getStringExtra("data");
                 sendMessage(data);
                 break;
             case "disconnect":
+                data = intent.getStringExtra("data");
+                connFail(data);
                 break;
         }
     }
 
     private boolean setUp() {
-        prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        final String ip = prefs.getString("ip", "");
-        final IDuplexStringMessagesFactory factory = new DuplexStringMessagesFactory();
-        final IMessagingSystemFactory messenger = new TcpMessagingSystemFactory();
+        ConnectivityManager connManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo wifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        if (!wifi.isConnected()) return false;
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        String ip = prefs.getString("ip", "");
+        IDuplexStringMessagesFactory factory = new DuplexStringMessagesFactory();
+        IMessagingSystemFactory messenger = new TcpMessagingSystemFactory();
         Main.sender = factory.createDuplexStringMessageSender();
         try {
             IDuplexOutputChannel output = messenger.createDuplexOutputChannel("tcp://" + ip + ":8060/");
@@ -72,26 +79,26 @@ public class CommService extends IntentService {
         }
     }
 
-    private void sendMessage(String message) {
+    private void sendMessage(final String message) {
         try {
             Main.sender.sendMessage(message);
         } catch (Exception e) {
-            connFail();
+            connFail("SEND FAILED");
         }
     }
 
     private void handleResponse(String message) {
-        lastPing = System.currentTimeMillis();
+        Main.lastPing = System.currentTimeMillis();
         Log.i("Log", message);
-        if (message.substring(2).equals("Ping")) {
+        if (message.split(":")[1].equals("Ping")) {
             sendMessage("Pong");
         }
-        if (message.substring(2).startsWith("Version:")) {
+        if (message.split(":")[1].equals("Version")) {
             String version = message.split(":")[2];
             if (version.equals("1.0")) sendMessage("Conn:" + Build.MODEL);
-            else connFail();
+            else connFail("VERSION MISMATCH");
         }
-        if (message.substring(2).equals("Req:Contacts")) {
+        if (message.split(":")[1].equals("Contacts")) {
             Cursor phones = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
             while (phones.moveToNext()) {
                 int phoneType = phones.getInt(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TYPE));
@@ -110,20 +117,44 @@ public class CommService extends IntentService {
             }
             phones.close();
         }
-        if (message.substring(2).startsWith("SMS:")) {
+        if (message.split(":")[1].equals("SMS")) {
             String[] input = message.split(":");
             SmsManager sms = SmsManager.getDefault();
             sms.sendTextMessage(input[2], null, input[3], null, null);
             sendMessage("Success:" + input[0]);
         }
-        if (message.substring(2).equals("DC")) {
-            connFail();
+        if (message.split(":")[1].equals("DC")) {
+            connFail("REMOTE DISCONNECT");
         }
     }
 
-    public void connFail() {
+    public void connFail(String status) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         Main.connected = false;
-        Main.sender.detachDuplexOutputChannel();
+        switch (status) {
+            case "QUIT":
+                break;
+            case "SEND FAILED":
+            case "PING TIMEOUT":
+            case "REMOTE DISCONNECT":
+                Main.showNotification(this, 1, "Connection lost.", false);
+                if (prefs.getBoolean("autoRetry", false)) retryLoop();
+                break;
+            case "CONNECTION REFUSED":
+                Main.showNotification(this, 1, "Connection refused. Ensure PC client is running and check the IP address.", false);
+                if (prefs.getBoolean("autoRetry", false)) retryLoop();
+                break;
+            case "VERSION MISMATCH":
+                Main.showNotification(this, 2, "PC client is outdated - please download the latest version.", false);
+                break;
+        }
+    }
+
+    private void retryLoop() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        while (!Main.connected && prefs.getBoolean("autoRetry", false) && !setUp()) {
+            android.os.SystemClock.sleep(Integer.parseInt(prefs.getString("autoRetryInterval", "300")) * 1000);
+        }
     }
 
 }

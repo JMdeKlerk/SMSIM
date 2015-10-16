@@ -1,9 +1,10 @@
 package me.johannesnz.smsim;
 
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
-import android.content.IntentFilter;
 import android.os.Bundle;
 import android.content.Intent;
 import android.preference.Preference;
@@ -20,8 +21,10 @@ import eneter.messaging.endpoints.stringmessages.IDuplexStringMessageSender;
 public class Main extends AppCompatActivity implements OnSharedPreferenceChangeListener {
 
     public static boolean connected;
-    public static IDuplexStringMessageSender sender;
-    public static WakeupReceiver lastPingWakeupCheck;
+    public static long lastPing;
+    public static volatile IDuplexStringMessageSender sender;
+
+    private PendingIntent alarmIntent;
 
     public static class SettingsFragment extends PreferenceFragment implements OnPreferenceClickListener {
 
@@ -41,11 +44,11 @@ public class Main extends AppCompatActivity implements OnSharedPreferenceChangeL
         public boolean onPreferenceClick(Preference pref) {
             switch (pref.getKey()) {
                 case ("exit"):
-                    Main.disconnect(activity);
+                    Main.disconnect(activity, "QUIT");
                     activity.finish();
                     break;
                 case ("restart"):
-                    Main.disconnect(activity);
+                    Main.disconnect(activity, "QUIT");
                     Main.connect(activity);
                     break;
                 case ("donate"):
@@ -58,8 +61,10 @@ public class Main extends AppCompatActivity implements OnSharedPreferenceChangeL
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        lastPingWakeupCheck = new WakeupReceiver();
-        registerReceiver(lastPingWakeupCheck, new IntentFilter((Intent.ACTION_SCREEN_ON)));
+        AlarmManager aManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(this, PingAlarmReceiver.class);
+        alarmIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
+        aManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME, AlarmManager.INTERVAL_HALF_HOUR, AlarmManager.INTERVAL_HALF_HOUR, alarmIntent);
         getFragmentManager().beginTransaction().replace(android.R.id.content, new SettingsFragment()).commit();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         prefs.registerOnSharedPreferenceChangeListener(this);
@@ -80,9 +85,10 @@ public class Main extends AppCompatActivity implements OnSharedPreferenceChangeL
         context.startService(intent);
     }
 
-    public static void disconnect(Context context) {
+    public static void disconnect(Context context, String status) {
         Intent intent = new Intent(context, CommService.class);
         intent.putExtra("command", "disconnect");
+        intent.putExtra("data", status);
         context.startService(intent);
     }
 
@@ -91,26 +97,25 @@ public class Main extends AppCompatActivity implements OnSharedPreferenceChangeL
         notification.setContentTitle("SMS Messenger");
         notification.setContentText(message);
         if (connected) notification.setSmallIcon(R.mipmap.ic_launcher);
-        else notification.setSmallIcon(R.mipmap.ic_launcher); // TODO Change to a red icon
+        else notification.setSmallIcon(R.mipmap.ic_notification_bad); // TODO Change to a red icon
         notification.setOngoing(onGoing);
-        // TODO Tap to restart
         NotificationManager nManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         nManager.notify(id, notification.build());
     }
 
     @Override
     protected void onDestroy() {
+        AlarmManager aManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        aManager.cancel(alarmIntent);
         NotificationManager nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         nManager.cancel(1);
-        sender.detachDuplexOutputChannel();
-        unregisterReceiver(lastPingWakeupCheck);
         super.onDestroy();
     }
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
         if (key.equals("ip")) {
-            disconnect(this);
+            disconnect(this, "QUIT");
             connect(this);
         }
     }

@@ -91,7 +91,7 @@
             this.contacts.ItemHeight = 54;
             this.contacts.Location = new System.Drawing.Point(12, 64);
             this.contacts.Name = "contacts";
-            this.contacts.Size = new System.Drawing.Size(230, 328);
+            this.contacts.Size = new System.Drawing.Size(230, 382);
             this.contacts.TabIndex = 4;
             this.contacts.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.contacts_doubleClick);
             // 
@@ -105,7 +105,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(254, 407);
+            this.ClientSize = new System.Drawing.Size(254, 459);
             this.Controls.Add(this.contacts);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.ipAddress);
