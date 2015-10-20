@@ -8,7 +8,7 @@ public class PingAlarmReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (Main.connected && (System.currentTimeMillis() - Main.lastPing) > 1000 * 60 * 30) {
+        if (Main.isConnected(context) && (System.currentTimeMillis() - Main.lastPing) > 1000 * 60 * 30) {
             Main.disconnect(context, "PING TIMEOUT");
         }
     }

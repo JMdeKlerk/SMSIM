@@ -1,8 +1,6 @@
 package me.johannesnz.smsim;
 
-import android.app.AlarmManager;
 import android.app.IntentService;
-import android.app.PendingIntent;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
@@ -71,7 +69,7 @@ public class CommService extends IntentService {
                 }
             });
             sendMessage("Version");
-            Main.connected = true;
+            Main.setConnected(this, true);
             Main.showNotification(this, 1, "Connected.", true);
             return true;
         } catch (Exception ex) {
@@ -130,7 +128,7 @@ public class CommService extends IntentService {
 
     public void connFail(String status) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        Main.connected = false;
+        Main.setConnected(this, false);
         switch (status) {
             case "QUIT":
                 break;
@@ -152,7 +150,7 @@ public class CommService extends IntentService {
 
     private void retryLoop() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        while (!Main.connected && prefs.getBoolean("autoRetry", false) && !setUp()) {
+        while (!Main.isConnected(this) && prefs.getBoolean("autoRetry", false) && !setUp()) {
             android.os.SystemClock.sleep(Integer.parseInt(prefs.getString("autoRetryInterval", "300")) * 1000);
         }
     }

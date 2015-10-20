@@ -20,11 +20,8 @@ import eneter.messaging.endpoints.stringmessages.IDuplexStringMessageSender;
 
 public class Main extends AppCompatActivity implements OnSharedPreferenceChangeListener {
 
-    public static boolean connected;
     public static long lastPing;
     public static volatile IDuplexStringMessageSender sender;
-
-    private PendingIntent alarmIntent;
 
     public static class SettingsFragment extends PreferenceFragment implements OnPreferenceClickListener {
 
@@ -63,12 +60,12 @@ public class Main extends AppCompatActivity implements OnSharedPreferenceChangeL
     protected void onCreate(Bundle savedInstanceState) {
         AlarmManager aManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(this, PingAlarmReceiver.class);
-        alarmIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
-        aManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME, AlarmManager.INTERVAL_HALF_HOUR, AlarmManager.INTERVAL_HALF_HOUR, alarmIntent);
+        PendingIntent alarmIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
+        aManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, AlarmManager.INTERVAL_HALF_HOUR, AlarmManager.INTERVAL_HALF_HOUR, alarmIntent);
         getFragmentManager().beginTransaction().replace(android.R.id.content, new SettingsFragment()).commit();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         prefs.registerOnSharedPreferenceChangeListener(this);
-        if (!prefs.getString("ip", "").equals("")) connect(this);
+        if (!prefs.getString("ip", "").equals("") && isConnected(this)) connect(this);
         super.onCreate(savedInstanceState);
     }
 
@@ -92,12 +89,23 @@ public class Main extends AppCompatActivity implements OnSharedPreferenceChangeL
         context.startService(intent);
     }
 
+    public static boolean isConnected(Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getBoolean("connected", false);
+    }
+
+    public static void setConnected(Context context, boolean state) {
+        SharedPreferences.Editor prefsEdit = PreferenceManager.getDefaultSharedPreferences(context).edit();
+        prefsEdit.putBoolean("connected", state);
+        prefsEdit.commit();
+    }
+
     public static void showNotification(Context context, int id, String message, boolean onGoing) {
         NotificationCompat.Builder notification = new NotificationCompat.Builder(context);
         notification.setContentTitle("SMS Messenger");
         notification.setContentText(message);
-        if (connected) notification.setSmallIcon(R.mipmap.ic_launcher);
-        else notification.setSmallIcon(R.mipmap.ic_notification_bad); // TODO Change to a red icon
+        if (isConnected(context)) notification.setSmallIcon(R.mipmap.ic_launcher);
+        else notification.setSmallIcon(R.mipmap.ic_notification_bad);
         notification.setOngoing(onGoing);
         NotificationManager nManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         nManager.notify(id, notification.build());
@@ -105,8 +113,6 @@ public class Main extends AppCompatActivity implements OnSharedPreferenceChangeL
 
     @Override
     protected void onDestroy() {
-        AlarmManager aManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        aManager.cancel(alarmIntent);
         NotificationManager nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         nManager.cancel(1);
         super.onDestroy();
