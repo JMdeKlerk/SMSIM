@@ -1,6 +1,7 @@
 package me.johannesnz.smsim;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.AlarmManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -15,6 +16,9 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
+
+import java.util.Iterator;
+import java.util.List;
 
 import eneter.messaging.endpoints.stringmessages.IDuplexStringMessageSender;
 
@@ -41,7 +45,6 @@ public class Main extends AppCompatActivity implements OnSharedPreferenceChangeL
         public boolean onPreferenceClick(Preference pref) {
             switch (pref.getKey()) {
                 case ("exit"):
-                    Main.disconnect(activity, "QUIT");
                     activity.finish();
                     break;
                 case ("restart"):
@@ -65,6 +68,8 @@ public class Main extends AppCompatActivity implements OnSharedPreferenceChangeL
         getFragmentManager().beginTransaction().replace(android.R.id.content, new SettingsFragment()).commit();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         prefs.registerOnSharedPreferenceChangeListener(this);
+        SharedPreferences.Editor prefsEdit = prefs.edit();
+        prefsEdit.putBoolean("shouldContinue", true);
         if (!prefs.getString("ip", "").equals("") && isConnected(this)) connect(this);
         super.onCreate(savedInstanceState);
     }
@@ -113,8 +118,14 @@ public class Main extends AppCompatActivity implements OnSharedPreferenceChangeL
 
     @Override
     protected void onDestroy() {
+        disconnect(this, "QUIT");
+        SharedPreferences.Editor prefsEdit = PreferenceManager.getDefaultSharedPreferences(this).edit();
+        prefsEdit.putBoolean("connected", false);
+        prefsEdit.putBoolean("retryInProgress", false);
+        prefsEdit.putBoolean("shouldContinue", false);
+        prefsEdit.commit();
         NotificationManager nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        nManager.cancel(1);
+        nManager.cancelAll();
         super.onDestroy();
     }
 

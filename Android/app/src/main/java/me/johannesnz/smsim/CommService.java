@@ -41,7 +41,7 @@ public class CommService extends IntentService {
                 break;
             case "send":
                 data = intent.getStringExtra("data");
-                sendMessage(data);
+                sendMessage(data, true);
                 break;
             case "disconnect":
                 data = intent.getStringExtra("data");
@@ -68,7 +68,7 @@ public class CommService extends IntentService {
                     handleResponse(response.getResponseMessage());
                 }
             });
-            sendMessage("Version");
+            sendMessage("Version", true);
             Main.setConnected(this, true);
             Main.showNotification(this, 1, "Connected.", true);
             return true;
@@ -77,11 +77,11 @@ public class CommService extends IntentService {
         }
     }
 
-    private void sendMessage(final String message) {
+    private void sendMessage(String message, boolean handleFail) {
         try {
             Main.sender.sendMessage(message);
         } catch (Exception e) {
-            connFail("SEND FAILED");
+            if (handleFail) connFail("SEND FAILED");
         }
     }
 
@@ -89,11 +89,11 @@ public class CommService extends IntentService {
         Main.lastPing = System.currentTimeMillis();
         Log.i("Log", message);
         if (message.split(":")[1].equals("Ping")) {
-            sendMessage("Pong");
+            sendMessage("Pong", true);
         }
         if (message.split(":")[1].equals("Version")) {
             String version = message.split(":")[2];
-            if (version.equals("1.0")) sendMessage("Conn:" + Build.MODEL);
+            if (version.equals("1.0")) sendMessage("Conn:" + Build.MODEL, true);
             else connFail("VERSION MISMATCH");
         }
         if (message.split(":")[1].equals("Contacts")) {
@@ -107,9 +107,9 @@ public class CommService extends IntentService {
                     InputStream inputStream = ContactsContract.Contacts.openContactPhotoInputStream(getContentResolver(), ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, new Long(contactID)));
                     if (inputStream != null) {
                         Bitmap photo = BitmapFactory.decodeStream(inputStream);
-                        sendMessage("Contact:" + name + ":" + phoneNumber + ":" + photo.toString());
+                        sendMessage("Contact:" + name + ":" + phoneNumber + ":" + photo.toString(), true);
                     } else {
-                        sendMessage("Contact:" + name + ":" + phoneNumber);
+                        sendMessage("Contact:" + name + ":" + phoneNumber, true);
                     }
                 }
             }
@@ -119,7 +119,7 @@ public class CommService extends IntentService {
             String[] input = message.split(":");
             SmsManager sms = SmsManager.getDefault();
             sms.sendTextMessage(input[2], null, input[3], null, null);
-            sendMessage("Success:" + input[0]);
+            sendMessage("Success:" + input[0], true);
         }
         if (message.split(":")[1].equals("DC")) {
             connFail("REMOTE DISCONNECT");
@@ -131,6 +131,8 @@ public class CommService extends IntentService {
         Main.setConnected(this, false);
         switch (status) {
             case "QUIT":
+                sendMessage("DC", false);
+                Main.sender = null;
                 break;
             case "SEND FAILED":
             case "PING TIMEOUT":
@@ -148,11 +150,19 @@ public class CommService extends IntentService {
         }
     }
 
-    private void retryLoop() {
+    private synchronized void retryLoop() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        while (!Main.isConnected(this) && prefs.getBoolean("autoRetry", false) && !setUp()) {
-            android.os.SystemClock.sleep(Integer.parseInt(prefs.getString("autoRetryInterval", "300")) * 1000);
+        if (prefs.getBoolean("retryInProgress", false)) return;
+        SharedPreferences.Editor prefsEdit = prefs.edit();
+        prefsEdit.putBoolean("retryInProgress", true).commit();
+        while (prefs.getBoolean("shouldContinue", false) && !Main.isConnected(this) && prefs.getBoolean("autoRetry", false) && !setUp()) {
+            try {
+                Thread.sleep(Integer.parseInt(prefs.getString("autoRetryInterval", "300")) * 1000);
+            } catch (InterruptedException e) {
+                prefsEdit.putBoolean("retryInProgress", false).commit();
+            }
         }
+        prefsEdit.putBoolean("retryInProgress", false).commit();
     }
 
 }

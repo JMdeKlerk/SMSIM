@@ -90,6 +90,9 @@ namespace SMSIM
                 Contact contact = new Contact();
                 contact.name = input[1];
                 contact.number = input[2];
+                foreach (Contact existingContact in contacts.Items) {
+                    if (existingContact.name.Equals(contact.name) && existingContact.number.Equals(contact.number)) return;
+                }
                 // Disabled for now; breaks everything
                 if (/*!input[3].Equals("null")*/ false)
                 {
