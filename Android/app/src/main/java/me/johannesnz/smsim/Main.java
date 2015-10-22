@@ -38,6 +38,7 @@ public class Main extends AppCompatActivity implements OnSharedPreferenceChangeL
             findPreference("exit").setOnPreferenceClickListener(this);
             findPreference("restart").setOnPreferenceClickListener(this);
             findPreference("donate").setOnPreferenceClickListener(this);
+            findPreference("share").setOnPreferenceClickListener(this);
             activity = getActivity();
         }
 
@@ -52,7 +53,15 @@ public class Main extends AppCompatActivity implements OnSharedPreferenceChangeL
                     Main.connect(activity);
                     break;
                 case ("donate"):
-                    // TODO
+                    startActivity(new Intent(activity, DonationActivity.class));
+                    break;
+                case ("share"):
+                    Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
+                    sharingIntent.setType("text/plain");
+                    String shareBody = "A free app to turn your SMS messages into IMs - get it here: https://play.google.com/store/apps/details?id=me.johannesnz.smsim";
+                    sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "IM-ify your texts");
+                    sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareBody);
+                    startActivity(Intent.createChooser(sharingIntent, "Share via:"));
                     break;
             }
             return true;
@@ -68,9 +77,7 @@ public class Main extends AppCompatActivity implements OnSharedPreferenceChangeL
         getFragmentManager().beginTransaction().replace(android.R.id.content, new SettingsFragment()).commit();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         prefs.registerOnSharedPreferenceChangeListener(this);
-        SharedPreferences.Editor prefsEdit = prefs.edit();
-        prefsEdit.putBoolean("shouldContinue", true);
-        if (!prefs.getString("ip", "").equals("") && isConnected(this)) connect(this);
+        if (!prefs.getString("ip", "").equals("") && !isConnected(this)) connect(this);
         super.onCreate(savedInstanceState);
     }
 
@@ -122,7 +129,6 @@ public class Main extends AppCompatActivity implements OnSharedPreferenceChangeL
         SharedPreferences.Editor prefsEdit = PreferenceManager.getDefaultSharedPreferences(this).edit();
         prefsEdit.putBoolean("connected", false);
         prefsEdit.putBoolean("retryInProgress", false);
-        prefsEdit.putBoolean("shouldContinue", false);
         prefsEdit.commit();
         NotificationManager nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         nManager.cancelAll();

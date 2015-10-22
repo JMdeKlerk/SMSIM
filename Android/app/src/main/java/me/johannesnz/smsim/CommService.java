@@ -103,14 +103,7 @@ public class CommService extends IntentService {
                 if (phoneType == ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE) {
                     String name = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
                     String phoneNumber = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                    String contactID = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.CONTACT_ID));
-                    InputStream inputStream = ContactsContract.Contacts.openContactPhotoInputStream(getContentResolver(), ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, new Long(contactID)));
-                    if (inputStream != null) {
-                        Bitmap photo = BitmapFactory.decodeStream(inputStream);
-                        sendMessage("Contact:" + name + ":" + phoneNumber + ":" + photo.toString(), true);
-                    } else {
-                        sendMessage("Contact:" + name + ":" + phoneNumber, true);
-                    }
+                    sendMessage("Contact:" + name + ":" + phoneNumber, true);
                 }
             }
             phones.close();
@@ -152,17 +145,12 @@ public class CommService extends IntentService {
 
     private synchronized void retryLoop() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        if (prefs.getBoolean("retryInProgress", false)) return;
-        SharedPreferences.Editor prefsEdit = prefs.edit();
-        prefsEdit.putBoolean("retryInProgress", true).commit();
-        while (prefs.getBoolean("shouldContinue", false) && !Main.isConnected(this) && prefs.getBoolean("autoRetry", false) && !setUp()) {
+        while (!Main.isConnected(this) && prefs.getBoolean("autoRetry", false) && !setUp()) {
             try {
                 Thread.sleep(Integer.parseInt(prefs.getString("autoRetryInterval", "300")) * 1000);
             } catch (InterruptedException e) {
-                prefsEdit.putBoolean("retryInProgress", false).commit();
             }
         }
-        prefsEdit.putBoolean("retryInProgress", false).commit();
     }
 
 }

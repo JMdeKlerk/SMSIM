@@ -90,7 +90,8 @@ namespace SMSIM
                 Contact contact = new Contact();
                 contact.name = input[1];
                 contact.number = input[2];
-                foreach (Contact existingContact in contacts.Items) {
+                foreach (Contact existingContact in contacts.Items)
+                {
                     if (existingContact.name.Equals(contact.name) && existingContact.number.Equals(contact.number)) return;
                 }
                 // Disabled for now; breaks everything
@@ -193,8 +194,17 @@ namespace SMSIM
 
         private void SMSIM_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (connectedDevice != null) sendMessage("DC");
-            receiver.DetachDuplexInputChannel();
+            if (connectedDevice != null)
+            {
+                var result = MessageBox.Show("A device is currently connected. Are you sure you wish to quit?", "Confirm Quit", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                if (result == DialogResult.No) e.Cancel = true;
+                else
+                {
+                    sendMessage("DC");
+                    receiver.DetachDuplexInputChannel();
+                }
+            }
+            else receiver.DetachDuplexInputChannel();
         }
 
         private string LocalIPAddress()

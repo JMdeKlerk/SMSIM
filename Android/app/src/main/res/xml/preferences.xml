@@ -36,13 +36,17 @@
             android:title="Stop service" />
         <Preference
             android:key="restart"
-            android:summary="Stop and restarts the service"
+            android:summary="Quit and restart the service if misbehaving"
             android:title="Restart service" />
     </PreferenceCategory>
-    <PreferenceCategory android:title="Contact">
+    <PreferenceCategory android:title="Misc">
         <Preference
             android:key="donate"
-            android:summary="Like this app? Buy me a beer"
+            android:summary="Like this app? Help a hungry developer"
             android:title="Donate" />
+        <Preference
+            android:key="share"
+            android:summary="Can't afford to donate? Share this app instead"
+            android:title="Share" />
     </PreferenceCategory>
 </PreferenceScreen>
