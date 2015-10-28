@@ -99,6 +99,7 @@
             // 
             this.trayIcon.Icon = ((System.Drawing.Icon)(resources.GetObject("trayIcon.Icon")));
             this.trayIcon.Text = "SMSIM";
+            this.trayIcon.Visible = true;
             this.trayIcon.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.trayIcon_MouseDoubleClick);
             // 
             // SMSIM
@@ -112,7 +113,7 @@
             this.Controls.Add(this.deviceName);
             this.Controls.Add(this.label1);
             this.Name = "SMSIM";
-            this.Text = "SMSIM";
+            this.Text = "SMS Messenger";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.SMSIM_FormClosing);
             this.Load += new System.EventHandler(this.SMSIM_Load);
             this.Resize += new System.EventHandler(this.SMSIM_Resize);

@@ -31,6 +31,7 @@ namespace SMSIM
                     if (i < input.Length - 1) messageBox.AppendText(":");
                 }
                 messageBox.AppendText("\n");
+                messageBox.ScrollToCaret();
             }
         }
 
@@ -39,6 +40,7 @@ namespace SMSIM
             parent.sendMessage("SMS:" + this.number + ":" + message);
             string timestamp = "[" + DateTime.Now.ToString("HH:mm:ss") + "] ";
             messageBox.AppendText(timestamp + "You: " + message + "\n");
+            messageBox.ScrollToCaret();
         }
 
         private void Conversation_FormClosing(object sender, FormClosingEventArgs e)

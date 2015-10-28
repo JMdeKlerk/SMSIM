@@ -1,6 +1,8 @@
 package me.johannesnz.smsim;
 
+import android.app.AlarmManager;
 import android.app.IntentService;
+import android.app.PendingIntent;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
@@ -69,12 +71,17 @@ public class CommService extends IntentService {
                 }
             });
             sendMessage("Version", true);
-            Main.setConnected(this, true);
-            Main.showNotification(this, 1, "Connected.", true);
-            return true;
         } catch (Exception ex) {
             return false;
         }
+        Main.setConnected(this, true);
+        Main.showNotification(this, 1, "Connected.", true);
+        AlarmManager aManager = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(this, RetryAlarmReceiver.class);
+        PendingIntent alarmIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
+        Log.i("Log", "Cancelling alarm");
+        aManager.cancel(alarmIntent);
+        return true;
     }
 
     private void sendMessage(String message, boolean handleFail) {
@@ -120,6 +127,7 @@ public class CommService extends IntentService {
     }
 
     public void connFail(String status) {
+        if (!Main.isConnected(this)) return;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         Main.setConnected(this, false);
         switch (status) {
@@ -145,12 +153,12 @@ public class CommService extends IntentService {
 
     private synchronized void retryLoop() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        while (!Main.isConnected(this) && prefs.getBoolean("autoRetry", false) && !setUp()) {
-            try {
-                Thread.sleep(Integer.parseInt(prefs.getString("autoRetryInterval", "300")) * 1000);
-            } catch (InterruptedException e) {
-            }
-        }
+        AlarmManager aManager = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(this, RetryAlarmReceiver.class);
+        PendingIntent alarmIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
+        int interval = Integer.parseInt(prefs.getString("autoRetryInterval", "300")) * 1000;
+        Log.i("Log", "Setting alarm for " + interval);
+        aManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, interval, interval, alarmIntent);
     }
 
 }

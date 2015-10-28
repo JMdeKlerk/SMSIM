@@ -158,6 +158,7 @@ namespace SMSIM
         private void contacts_doubleClick(object sender, MouseEventArgs e)
         {
             Contact selected = (Contact)contacts.SelectedItem;
+            if (selected == null) return;
             if (openConversations.ContainsKey(selected.name))
             {
                 Conversation conversation;
@@ -180,14 +181,12 @@ namespace SMSIM
         {
             if (FormWindowState.Minimized == this.WindowState)
             {
-                trayIcon.Visible = true;
                 this.Hide();
             }
         }
 
         private void trayIcon_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            trayIcon.Visible = false;
             this.Show();
             this.WindowState = FormWindowState.Normal;
         }

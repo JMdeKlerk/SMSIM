@@ -42,7 +42,15 @@ public class SMSReceiver extends BroadcastReceiver {
                             abortBroadcast();
                         }
                     } catch (Exception e) {
-                        Main.disconnect(context, "SEND FAILED");
+                        try {
+                            Main.connect(context);
+                            Main.sendMessage(context, "SMS:" + displayName + ":" + from + ":" + body);
+                            if (prefs.getBoolean("suppressAlerts", false)) {
+                                abortBroadcast();
+                            }
+                        } catch (Exception ex) {
+                            Main.disconnect(context, "SEND FAILED");
+                        }
                     }
                 }
             }

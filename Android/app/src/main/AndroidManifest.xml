@@ -47,6 +47,7 @@
             </intent-filter>
         </receiver>
         <receiver android:name=".PingAlarmReceiver"/>
+        <receiver android:name=".RetryAlarmReceiver"/>
         <receiver android:name=".WifiStateReceiver">
             <intent-filter>
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
