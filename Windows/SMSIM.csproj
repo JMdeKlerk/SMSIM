@@ -32,6 +32,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Group Message-50.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Eneter.Messaging.Framework">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Eneter\Eneter.Messaging.Framework\v6.5.2\Net45\Release\Eneter.Messaging.Framework.dll</HintPath>
@@ -95,7 +98,8 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="unknown.png" />
+    <EmbeddedResource Include="Contacts-50.png" />
+    <Content Include="Group Message-50.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -36,21 +36,9 @@ public class SMSReceiver extends BroadcastReceiver {
                     } catch (CursorIndexOutOfBoundsException e) {
                         displayName = "Unknown";
                     }
-                    try {
-                        Main.sendMessage(context, "SMS:" + displayName + ":" + from + ":" + body);
-                        if (prefs.getBoolean("suppressAlerts", false)) {
-                            abortBroadcast();
-                        }
-                    } catch (Exception e) {
-                        try {
-                            Main.connect(context);
-                            Main.sendMessage(context, "SMS:" + displayName + ":" + from + ":" + body);
-                            if (prefs.getBoolean("suppressAlerts", false)) {
-                                abortBroadcast();
-                            }
-                        } catch (Exception ex) {
-                            Main.disconnect(context, "SEND FAILED");
-                        }
+                    Main.sendMessage(context, "SMS:" + displayName + ":" + from + ":" + body);
+                    if (prefs.getBoolean("suppressAlerts", false)) {
+                        abortBroadcast();
                     }
                 }
             }

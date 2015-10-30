@@ -18,7 +18,7 @@
         android:layout_marginRight="@dimen/activity_horizontal_margin"
         android:layout_marginTop="@dimen/activity_horizontal_margin"
         android:gravity="center"
-        android:text="I hate ads, and I want my apps to be ad-free for as long as possible. I'm sure you do as well. So throw me a couple of bucks, and keep my apps ad-free forever.\n\nUsing any of the below options will ensure that even if ads are added to this app, you will never see them."
+        android:text="I hate ads, and I'm sure you do as well. I want my apps to be ad-free for as long as possible. So throw a small donation my way, and keep my apps ad-free forever."
         android:textAllCaps="false"
         android:textSize="@dimen/abc_text_size_body_1_material"/>
 
@@ -29,80 +29,39 @@
         android:background="@android:color/holo_blue_bright"/>
 
     <LinearLayout
+        android:gravity="center"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/activity_horizontal_margin"
         android:orientation="horizontal">
 
-        <TextView
-            android:layout_width="0pt"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/activity_horizontal_margin"
-            android:layout_weight="1"
-            android:text="$1 to keep bread on my table."
-            android:textAllCaps="false"
-            android:textSize="@dimen/abc_text_size_body_1_material"/>
-
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/activity_horizontal_margin"
-            android:layout_marginRight="@dimen/activity_horizontal_margin"
             android:onClick="donateMin"
-            android:text="Donate"
+            android:text="Donation - $1"
             android:textAllCaps="false"/>
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <TextView
-            android:layout_width="0pt"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/activity_horizontal_margin"
-            android:layout_weight="1"
-            android:text="$2 to keep my caffeine high up."
-            android:textAllCaps="false"
-            android:textSize="@dimen/abc_text_size_body_1_material"/>
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/activity_horizontal_margin"
-            android:layout_marginRight="@dimen/activity_horizontal_margin"
             android:onClick="donateMed"
-            android:text="Donate"
+            android:text="Donation - $2"
             android:textAllCaps="false"/>
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/activity_horizontal_margin"
-        android:orientation="horizontal">
-
-        <TextView
-            android:layout_width="0pt"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/activity_horizontal_margin"
-            android:layout_weight="1"
-            android:text="$5 to keep the roof over my head."
-            android:textAllCaps="false"
-            android:textSize="@dimen/abc_text_size_body_1_material"/>
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/activity_horizontal_margin"
-            android:layout_marginRight="@dimen/activity_horizontal_margin"
             android:onClick="donateMax"
-            android:text="Donate"
+            android:text="Donation - $5"
             android:textAllCaps="false"/>
 
     </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="@dimen/activity_horizontal_margin"
+        android:background="@android:color/holo_blue_bright"/>
 
 </LinearLayout>

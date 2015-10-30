@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Conversation));
             this.send = new System.Windows.Forms.Button();
             this.entry = new System.Windows.Forms.TextBox();
             this.messageBox = new System.Windows.Forms.RichTextBox();
@@ -75,6 +76,7 @@
             this.Controls.Add(this.messageBox);
             this.Controls.Add(this.entry);
             this.Controls.Add(this.send);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Conversation";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Conversation";

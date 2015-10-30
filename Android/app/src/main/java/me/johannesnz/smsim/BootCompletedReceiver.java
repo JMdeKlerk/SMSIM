@@ -16,7 +16,7 @@ public class BootCompletedReceiver extends BroadcastReceiver {
             AlarmManager aManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
             Intent alarmIntent = new Intent(context, PingAlarmReceiver.class);
             PendingIntent pAlarmIntent = PendingIntent.getBroadcast(context, 0, alarmIntent, 0);
-            aManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, AlarmManager.INTERVAL_HALF_HOUR, AlarmManager.INTERVAL_HALF_HOUR, pAlarmIntent);
+            aManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, AlarmManager.INTERVAL_FIFTEEN_MINUTES, AlarmManager.INTERVAL_FIFTEEN_MINUTES, pAlarmIntent);
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
             if (prefs.contains("ip") && prefs.getBoolean("startOnBoot", false)) {
                 Main.connect(context);

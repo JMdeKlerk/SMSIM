@@ -50,7 +50,7 @@ namespace SMSIM
             this.ActiveControl = label1;
             System.Timers.Timer pingTimer = new System.Timers.Timer();
             pingTimer.Elapsed += new ElapsedEventHandler(pingTimeout);
-            pingTimer.Interval = 1000 * 60 * 15;
+            pingTimer.Interval = 1000 * 60 * 10;
             pingTimer.Enabled = true;
         }
 
@@ -106,7 +106,7 @@ namespace SMSIM
                 {
                     System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
                     Array lol = assembly.GetManifestResourceNames();
-                    Stream stream = assembly.GetManifestResourceStream("SMSIM.unknown.png");
+                    Stream stream = assembly.GetManifestResourceStream("SMSIM.Contacts-50.png");
                     contact.displayPic = new Bitmap(stream);
                 }
                 contacts.Invoke(new MethodInvoker(delegate { contacts.Items.Add(contact); contacts.Sorted = false; contacts.Sorted = true; }));

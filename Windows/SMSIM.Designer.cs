@@ -112,6 +112,7 @@
             this.Controls.Add(this.ipAddress);
             this.Controls.Add(this.deviceName);
             this.Controls.Add(this.label1);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "SMSIM";
             this.Text = "SMS Messenger";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.SMSIM_FormClosing);

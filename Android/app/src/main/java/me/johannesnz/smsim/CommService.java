@@ -3,22 +3,16 @@ package me.johannesnz.smsim;
 import android.app.AlarmManager;
 import android.app.IntentService;
 import android.app.PendingIntent;
-import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.provider.ContactsContract;
 import android.telephony.SmsManager;
 import android.preference.PreferenceManager;
-import android.util.Log;
-
-import java.io.InputStream;
 
 import eneter.messaging.endpoints.stringmessages.DuplexStringMessagesFactory;
 import eneter.messaging.endpoints.stringmessages.IDuplexStringMessagesFactory;
@@ -79,7 +73,6 @@ public class CommService extends IntentService {
         AlarmManager aManager = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(this, RetryAlarmReceiver.class);
         PendingIntent alarmIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
-        Log.i("Log", "Cancelling alarm");
         aManager.cancel(alarmIntent);
         return true;
     }
@@ -94,7 +87,6 @@ public class CommService extends IntentService {
 
     private void handleResponse(String message) {
         Main.lastPing = System.currentTimeMillis();
-        Log.i("Log", message);
         if (message.split(":")[1].equals("Ping")) {
             sendMessage("Pong", true);
         }
@@ -157,7 +149,6 @@ public class CommService extends IntentService {
         Intent intent = new Intent(this, RetryAlarmReceiver.class);
         PendingIntent alarmIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
         int interval = Integer.parseInt(prefs.getString("autoRetryInterval", "300")) * 1000;
-        Log.i("Log", "Setting alarm for " + interval);
         aManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, interval, interval, alarmIntent);
     }
 

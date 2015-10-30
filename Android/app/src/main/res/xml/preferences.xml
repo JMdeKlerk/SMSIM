@@ -26,7 +26,7 @@
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="suppressAlerts"
-            android:summary="Only suppresses on a successful send"
+            android:summary="In beta! May result in lost messages"
             android:title="Suppress SMS alerts" />
     </PreferenceCategory>
     <PreferenceCategory android:title="Maintenance">
@@ -42,7 +42,7 @@
     <PreferenceCategory android:title="Misc">
         <Preference
             android:key="donate"
-            android:summary="Like this app? Help a hungry developer"
+            android:summary="Like this app? Buy me a beer"
             android:title="Donate" />
         <Preference
             android:key="share"
