@@ -25,6 +25,11 @@
             android:title="Start on boot" />
         <CheckBoxPreference
             android:defaultValue="false"
+            android:key="hideNotifications"
+            android:summary="Disable the persistent status icon"
+            android:title="Hide notification icon" />
+        <CheckBoxPreference
+            android:defaultValue="false"
             android:key="suppressAlerts"
             android:summary="In beta! May result in lost messages"
             android:title="Suppress SMS alerts" />
@@ -46,7 +51,7 @@
             android:title="Donate" />
         <Preference
             android:key="share"
-            android:summary="Can't afford to donate? Share this app instead"
+            android:summary="Can't donate? Share this app instead"
             android:title="Share" />
     </PreferenceCategory>
 </PreferenceScreen>

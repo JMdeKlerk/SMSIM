@@ -15,6 +15,11 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+
+import com.android.vending.util.IabHelper;
+import com.android.vending.util.IabResult;
+import com.android.vending.util.Purchase;
 
 import eneter.messaging.endpoints.stringmessages.IDuplexStringMessageSender;
 
@@ -26,6 +31,7 @@ public class Main extends AppCompatActivity implements OnSharedPreferenceChangeL
     public static class SettingsFragment extends PreferenceFragment implements OnPreferenceClickListener {
 
         private static Activity activity;
+        private IabHelper billingHelper;
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -36,7 +42,21 @@ public class Main extends AppCompatActivity implements OnSharedPreferenceChangeL
             findPreference("donate").setOnPreferenceClickListener(this);
             findPreference("share").setOnPreferenceClickListener(this);
             activity = getActivity();
+            String base64EncodedPublicKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyesaLxbMV4dFvMQ" +
+                    "s3uefeEwri0NBJG6+OPKVVQNwkOHL9l/yyBDHYEZhwM8SZXqIIbsfniM33itgTZad/Xguz+kcxpJ76txGiS" +
+                    "DX/iK5i0C6y6vat6NiEb0EvHdvveew+gbbixUNnbCbKNBXNJoxYjD+ySZzDS+o4aomCwKcxsnjaefivuRh1" +
+                    "pWAupRGPF1sfu5N2htTr6c8LvHDVg00OIhMY8DcD/wVo5TYhkikOJXzw35hLvoQVplj4zQP2PnE7jYngUms" +
+                    "zSwfCkQD3bb8wunvju0JhwrNTqDTVB84W90AgxW5xv6I3ieafYbc1tLznlBvaocCze01+fli+721OQIDAQAB";
+            billingHelper = new IabHelper(activity, base64EncodedPublicKey);
+            billingHelper.startSetup(null);
         }
+
+        IabHelper.OnIabPurchaseFinishedListener donationFinishedListener = new IabHelper.OnIabPurchaseFinishedListener() {
+            @Override
+            public void onIabPurchaseFinished(IabResult result, Purchase info) {
+                if (result.isSuccess()) Log.i("Log", info.getSku() + " purchased");
+            }
+        };
 
         @Override
         public boolean onPreferenceClick(Preference pref) {
@@ -49,7 +69,7 @@ public class Main extends AppCompatActivity implements OnSharedPreferenceChangeL
                     Main.connect(activity);
                     break;
                 case ("donate"):
-                    startActivity(new Intent(activity, DonationActivity.class));
+                    billingHelper.launchPurchaseFlow(activity, "donate_1", 0, donationFinishedListener);
                     break;
                 case ("share"):
                     Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
@@ -109,14 +129,17 @@ public class Main extends AppCompatActivity implements OnSharedPreferenceChangeL
     }
 
     public static void showNotification(Context context, int id, String message, boolean onGoing) {
-        NotificationCompat.Builder notification = new NotificationCompat.Builder(context);
-        notification.setContentTitle("SMS Messenger");
-        notification.setContentText(message);
-        if (isConnected(context)) notification.setSmallIcon(R.mipmap.ic_launcher);
-        else notification.setSmallIcon(R.mipmap.ic_notification_bad);
-        notification.setOngoing(onGoing);
-        NotificationManager nManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        nManager.notify(id, notification.build());
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        if (!prefs.getBoolean("hideNotifications", false)) {
+            NotificationCompat.Builder notification = new NotificationCompat.Builder(context);
+            notification.setContentTitle("SMS Messenger");
+            notification.setContentText(message);
+            if (isConnected(context)) notification.setSmallIcon(R.mipmap.ic_launcher);
+            else notification.setSmallIcon(R.mipmap.ic_notification_bad);
+            notification.setOngoing(onGoing);
+            NotificationManager nManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            nManager.notify(id, notification.build());
+        }
     }
 
     @Override
@@ -136,6 +159,10 @@ public class Main extends AppCompatActivity implements OnSharedPreferenceChangeL
         if (key.equals("ip")) {
             disconnect(this, "QUIT");
             connect(this);
+        }
+        if (key.equals("hideNotifications")) {
+            NotificationManager nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            nManager.cancelAll();
         }
     }
 

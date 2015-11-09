@@ -8,8 +8,8 @@ android {
         applicationId "me.johannesnz.smsim"
         minSdkVersion 15
         targetSdkVersion 22
-        versionCode 4
-        versionName "1.03"
+        versionCode 5
+        versionName "1.0.5"
     }
     buildTypes {
         release {
