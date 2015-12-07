@@ -21,6 +21,8 @@ namespace SMSIM {
         private IDuplexStringMessageReceiver receiver;
         private String connectedDevice;
         private bool ping = false;
+
+        public static int smsId = 0;
         public Dictionary<String, Conversation> openConversations = new Dictionary<string, Conversation>();
 
         public SMSIM() {
@@ -64,7 +66,7 @@ namespace SMSIM {
             String[] input = e.RequestMessage.Split(':');
             if (input[0].Equals("Version")) {
                 connectedDevice = e.ResponseReceiverId;
-                sendMessage("Version:1.0");
+                sendMessage("Version:1.1");
                 connectedDevice = null;
             }
             if (input[0].Equals("Conn")) {
@@ -88,6 +90,7 @@ namespace SMSIM {
             }
             if (input[0].Equals("SMS")) {
                 SystemSounds.Beep.Play();
+                Console.WriteLine(e.RequestMessage);
                 if (openConversations.ContainsKey(input[1])) {
                     Conversation conversation;
                     if (openConversations.TryGetValue(input[1], out conversation)) {
@@ -102,6 +105,12 @@ namespace SMSIM {
                         Application.Run(conversation);
                     });
                     bw.RunWorkerAsync();
+                }
+            }
+            if (input[0].Equals("Success")) {
+                foreach (KeyValuePair<string, Conversation> entry in openConversations) {
+                    int id = Int32.Parse(input[1]);
+                    entry.Value.messageSuccess(id);
                 }
             }
             if (input[0].Equals("DC")) {

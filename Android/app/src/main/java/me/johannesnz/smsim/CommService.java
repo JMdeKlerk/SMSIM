@@ -13,6 +13,9 @@ import android.os.Build;
 import android.provider.ContactsContract;
 import android.telephony.SmsManager;
 import android.preference.PreferenceManager;
+import android.util.Log;
+
+import java.util.ArrayList;
 
 import eneter.messaging.endpoints.stringmessages.DuplexStringMessagesFactory;
 import eneter.messaging.endpoints.stringmessages.IDuplexStringMessagesFactory;
@@ -23,6 +26,8 @@ import eneter.messaging.messagingsystems.tcpmessagingsystem.TcpMessagingSystemFa
 import eneter.net.system.EventHandler;
 
 public class CommService extends IntentService {
+
+    private ArrayList<String> failedMessages = new ArrayList();
 
     public CommService() {
         super("CommService");
@@ -79,9 +84,15 @@ public class CommService extends IntentService {
 
     private void sendMessage(String message, boolean handleFail) {
         try {
+            for (String retryMessage : failedMessages) {
+                Main.sender.sendMessage(retryMessage);
+            }
             Main.sender.sendMessage(message);
         } catch (Exception e) {
-            if (handleFail) connFail("SEND FAILED");
+            if (handleFail) {
+                failedMessages.add(message);
+                connFail("SEND FAILED");
+            }
         }
     }
 
@@ -92,7 +103,7 @@ public class CommService extends IntentService {
         }
         if (message.split(":")[1].equals("Version")) {
             String version = message.split(":")[2];
-            if (version.equals("1.0")) sendMessage("Conn:" + Build.MODEL, true);
+            if (version.equals("1.1")) sendMessage("Conn:" + Build.MODEL, true);
             else connFail("VERSION MISMATCH");
         }
         if (message.split(":")[1].equals("Contacts")) {
@@ -108,10 +119,11 @@ public class CommService extends IntentService {
             phones.close();
         }
         if (message.split(":")[1].equals("SMS")) {
+            Log.i("Log", message);
             String[] input = message.split(":");
             SmsManager sms = SmsManager.getDefault();
-            sms.sendTextMessage(input[2], null, input[3], null, null);
-            sendMessage("Success:" + input[0], true);
+            sms.sendTextMessage(input[3], null, input[4], null, null);
+            sendMessage("Success:" + input[2], true);
         }
         if (message.split(":")[1].equals("DC")) {
             connFail("REMOTE DISCONNECT");
@@ -138,7 +150,7 @@ public class CommService extends IntentService {
                 if (prefs.getBoolean("autoRetry", false)) retryLoop();
                 break;
             case "VERSION MISMATCH":
-                Main.showNotification(this, 2, "PC client is outdated - please download the latest version.", false);
+                Main.showNotification(this, 1, "PC client is outdated - please download the latest version.", false);
                 break;
         }
     }
