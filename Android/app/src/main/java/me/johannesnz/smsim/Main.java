@@ -69,7 +69,10 @@ public class Main extends AppCompatActivity implements OnSharedPreferenceChangeL
                     Main.connect(activity);
                     break;
                 case ("donate"):
-                    billingHelper.launchPurchaseFlow(activity, "donate_1", 0, donationFinishedListener);
+                    try {
+                        billingHelper.launchPurchaseFlow(activity, "donate_1", 0, donationFinishedListener);
+                    } catch (IllegalStateException e) {
+                    }
                     break;
                 case ("share"):
                     Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);

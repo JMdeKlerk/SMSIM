@@ -7,11 +7,12 @@
             android:summary="Address of receiving PC"
             android:title="Server IP" />
         <CheckBoxPreference
-            android:defaultValue="false"
+            android:defaultValue="true"
             android:key="autoRetry"
             android:summary="Retry connection when lost"
             android:title="Auto reconnect" />
         <ListPreference
+            android:defaultValue="120"
             android:dependency="autoRetry"
             android:entries="@array/RetryInterval"
             android:entryValues="@array/RetryIntervalValues"
