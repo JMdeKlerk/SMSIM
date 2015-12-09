@@ -90,7 +90,6 @@ namespace SMSIM {
             }
             if (input[0].Equals("SMS")) {
                 SystemSounds.Beep.Play();
-                Console.WriteLine(e.RequestMessage);
                 if (openConversations.ContainsKey(input[1])) {
                     Conversation conversation;
                     if (openConversations.TryGetValue(input[1], out conversation)) {
@@ -111,6 +110,12 @@ namespace SMSIM {
                 foreach (KeyValuePair<string, Conversation> entry in openConversations) {
                     int id = Int32.Parse(input[1]);
                     entry.Value.messageSuccess(id);
+                }
+            }
+            if (input[0].Equals("Fail")) {
+                foreach (KeyValuePair<string, Conversation> entry in openConversations) {
+                    int id = Int32.Parse(input[1]);
+                    entry.Value.messageFail(id);
                 }
             }
             if (input[0].Equals("DC")) {

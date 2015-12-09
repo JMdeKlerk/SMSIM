@@ -1,10 +1,13 @@
 package me.johannesnz.smsim;
 
+import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.IntentService;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
@@ -119,11 +122,17 @@ public class CommService extends IntentService {
             phones.close();
         }
         if (message.split(":")[1].equals("SMS")) {
-            Log.i("Log", message);
-            String[] input = message.split(":");
+            final String[] input = message.split(":");
             SmsManager sms = SmsManager.getDefault();
-            sms.sendTextMessage(input[3], null, input[4], null, null);
-            sendMessage("Success:" + input[2], true);
+            PendingIntent sentPI = PendingIntent.getBroadcast(this, 0, new Intent("SMS_SENT"), 0);
+            this.registerReceiver(new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    if (getResultCode() == Activity.RESULT_OK) sendMessage("Success:" + input[2], true);
+                    else sendMessage("Fail:" + input[2], true);
+                }
+            }, new IntentFilter("SMS_SENT"));
+            sms.sendTextMessage(input[3], null, input[4], sentPI, null);
         }
         if (message.split(":")[1].equals("DC")) {
             connFail("REMOTE DISCONNECT");

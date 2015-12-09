@@ -37,7 +37,7 @@
             // send
             // 
             this.send.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.send.Location = new System.Drawing.Point(277, 276);
+            this.send.Location = new System.Drawing.Point(247, 206);
             this.send.Name = "send";
             this.send.Size = new System.Drawing.Size(75, 23);
             this.send.TabIndex = 0;
@@ -49,9 +49,9 @@
             // 
             this.entry.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.entry.Location = new System.Drawing.Point(12, 278);
+            this.entry.Location = new System.Drawing.Point(12, 208);
             this.entry.Name = "entry";
-            this.entry.Size = new System.Drawing.Size(259, 20);
+            this.entry.Size = new System.Drawing.Size(229, 20);
             this.entry.TabIndex = 1;
             // 
             // messageBox
@@ -60,10 +60,11 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.messageBox.BackColor = System.Drawing.SystemColors.ButtonHighlight;
+            this.messageBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.messageBox.Location = new System.Drawing.Point(13, 13);
             this.messageBox.Name = "messageBox";
             this.messageBox.ReadOnly = true;
-            this.messageBox.Size = new System.Drawing.Size(339, 257);
+            this.messageBox.Size = new System.Drawing.Size(309, 187);
             this.messageBox.TabIndex = 2;
             this.messageBox.Text = "";
             // 
@@ -72,7 +73,7 @@
             this.AcceptButton = this.send;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(364, 311);
+            this.ClientSize = new System.Drawing.Size(334, 241);
             this.Controls.Add(this.messageBox);
             this.Controls.Add(this.entry);
             this.Controls.Add(this.send);

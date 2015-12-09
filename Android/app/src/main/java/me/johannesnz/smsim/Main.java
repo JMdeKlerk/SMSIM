@@ -77,7 +77,8 @@ public class Main extends AppCompatActivity implements OnSharedPreferenceChangeL
                 case ("share"):
                     Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
                     sharingIntent.setType("text/plain");
-                    String shareBody = "A free app to turn your SMS messages into IMs - get it here: https://play.google.com/store/apps/details?id=me.johannesnz.smsim";
+                    String shareBody = "A free app to turn your SMS messages into IMs - get it here: " +
+                            "https://play.google.com/store/apps/details?id=me.johannesnz.smsim";
                     sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "IM-ify your texts");
                     sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareBody);
                     startActivity(Intent.createChooser(sharingIntent, "Share via:"));
@@ -92,7 +93,8 @@ public class Main extends AppCompatActivity implements OnSharedPreferenceChangeL
         AlarmManager aManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(this, PingAlarmReceiver.class);
         PendingIntent alarmIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
-        aManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, AlarmManager.INTERVAL_FIFTEEN_MINUTES, AlarmManager.INTERVAL_FIFTEEN_MINUTES, alarmIntent);
+        aManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, AlarmManager.INTERVAL_FIFTEEN_MINUTES,
+                AlarmManager.INTERVAL_FIFTEEN_MINUTES, alarmIntent);
         getFragmentManager().beginTransaction().replace(android.R.id.content, new SettingsFragment()).commit();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         prefs.registerOnSharedPreferenceChangeListener(this);

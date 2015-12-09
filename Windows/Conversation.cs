@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Drawing;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -36,15 +37,36 @@ namespace SMSIM {
             int id = Interlocked.Increment(ref SMSIM.smsId);
             this.pendingMessages[id] = message;
             parent.sendMessage("SMS:" + id + ":" + this.number + ":" + message);
+            string timestamp = "[" + DateTime.Now.ToString("HH:mm:ss") + "] ";
+            this.Invoke(new MethodInvoker(delegate {
+                messageBox.AppendText(timestamp + "You: " + pendingMessages[id] + "\n");
+                messageBox.ScrollToCaret();
+                int lastMessageLength = (timestamp + "You: " + pendingMessages[id] + "\n").Length;
+                messageBox.Select(messageBox.Text.Length - lastMessageLength, lastMessageLength);
+                messageBox.SelectionFont = new System.Drawing.Font("Sans Serif", 8, FontStyle.Italic);
+            }));
         }
 
         public void messageSuccess(int id) {
             if (pendingMessages[id] != null) {
-                string timestamp = "[" + DateTime.Now.ToString("HH:mm:ss") + "] ";
                 this.Invoke(new MethodInvoker(delegate {
-                    messageBox.AppendText(timestamp + "You: " + pendingMessages[id] + "\n");
-                    messageBox.ScrollToCaret();
+                    int lastMessageLength = ("You: " + pendingMessages[id] + "\n").Length + 11;
+                    messageBox.Select(messageBox.Text.Length - lastMessageLength, lastMessageLength);
+                    messageBox.SelectionFont = new System.Drawing.Font("Sans Serif", 8);
                 }));
+                pendingMessages[id] = null;
+            }
+        }
+
+        public void messageFail(int id) {
+            if (pendingMessages[id] != null) {
+                this.Invoke(new MethodInvoker(delegate {
+                    int lastMessageLength = ("You: " + pendingMessages[id] + "\n").Length + 11;
+                    messageBox.Select(messageBox.Text.Length - lastMessageLength, lastMessageLength);
+                    messageBox.SelectionFont = new System.Drawing.Font("Sans Serif", 8);
+                    messageBox.SelectionColor = Color.Red;
+                }));
+                pendingMessages[id] = null;
             }
         }
 
