@@ -9,7 +9,13 @@ namespace SMSIM {
 
         private SMSIM parent;
         private String name, number;
-        private string[] pendingMessages = new string[10];
+        private ArrayList pendingMessages = new ArrayList();
+
+        private class PendingMessage {
+            public int id { get; set; }
+            public int startIndex { get; set; }
+            public int length { get; set; }
+        }
 
         public Conversation(SMSIM parent, string[] input) {
             InitializeComponent();
@@ -35,38 +41,47 @@ namespace SMSIM {
 
         private void sendMessage(String message) {
             int id = Interlocked.Increment(ref SMSIM.smsId);
-            this.pendingMessages[id] = message;
-            parent.sendMessage("SMS:" + id + ":" + this.number + ":" + message);
             string timestamp = "[" + DateTime.Now.ToString("HH:mm:ss") + "] ";
+            int startIndex = messageBox.Text.Length;
+            int length = (timestamp + "You: " + message + "\n").Length;
             this.Invoke(new MethodInvoker(delegate {
-                messageBox.AppendText(timestamp + "You: " + pendingMessages[id] + "\n");
+                messageBox.AppendText(timestamp + "You: " + message + "\n");
                 messageBox.ScrollToCaret();
-                int lastMessageLength = (timestamp + "You: " + pendingMessages[id] + "\n").Length;
-                messageBox.Select(messageBox.Text.Length - lastMessageLength, lastMessageLength);
+                messageBox.Select(startIndex, length);
                 messageBox.SelectionFont = new System.Drawing.Font("Sans Serif", 8, FontStyle.Italic);
             }));
+            PendingMessage pendingMessage = new PendingMessage();
+            pendingMessage.id = id;
+            pendingMessage.length = length;
+            pendingMessage.startIndex = startIndex;
+            pendingMessages.Add(pendingMessage);
+            parent.sendMessage("SMS:" + id + ":" + this.number + ":" + message);
         }
 
         public void messageSuccess(int id) {
-            if (pendingMessages[id] != null) {
-                this.Invoke(new MethodInvoker(delegate {
-                    int lastMessageLength = ("You: " + pendingMessages[id] + "\n").Length + 11;
-                    messageBox.Select(messageBox.Text.Length - lastMessageLength, lastMessageLength);
-                    messageBox.SelectionFont = new System.Drawing.Font("Sans Serif", 8);
-                }));
-                pendingMessages[id] = null;
+            foreach (PendingMessage pendingMessage in pendingMessages) {
+                if (pendingMessage.id == id) {
+                    this.Invoke(new MethodInvoker(delegate {
+                        messageBox.Select(pendingMessage.startIndex, pendingMessage.length);
+                        messageBox.SelectionFont = new System.Drawing.Font("Sans Serif", 8);
+                    }));
+                    pendingMessages.Remove(pendingMessage);
+                    break;
+                }
             }
         }
 
         public void messageFail(int id) {
-            if (pendingMessages[id] != null) {
-                this.Invoke(new MethodInvoker(delegate {
-                    int lastMessageLength = ("You: " + pendingMessages[id] + "\n").Length + 11;
-                    messageBox.Select(messageBox.Text.Length - lastMessageLength, lastMessageLength);
-                    messageBox.SelectionFont = new System.Drawing.Font("Sans Serif", 8);
-                    messageBox.SelectionColor = Color.Red;
-                }));
-                pendingMessages[id] = null;
+            foreach (PendingMessage pendingMessage in pendingMessages) {
+                if (pendingMessage.id == id) {
+                    this.Invoke(new MethodInvoker(delegate {
+                        messageBox.Select(pendingMessage.startIndex, pendingMessage.length);
+                        messageBox.SelectionFont = new System.Drawing.Font("Sans Serif", 8);
+                        messageBox.SelectionColor = Color.Red;
+                    }));
+                    pendingMessages.Remove(pendingMessage);
+                    break;
+                }
             }
         }
 

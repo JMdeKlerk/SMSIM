@@ -122,16 +122,18 @@ public class CommService extends IntentService {
             phones.close();
         }
         if (message.split(":")[1].equals("SMS")) {
-            final String[] input = message.split(":");
+            String[] input = message.split(":");
             SmsManager sms = SmsManager.getDefault();
-            PendingIntent sentPI = PendingIntent.getBroadcast(this, 0, new Intent("SMS_SENT"), 0);
+            Intent intent = new Intent(input[2]);
+            PendingIntent sentPI = PendingIntent.getBroadcast(this, 0, intent, 0);
             this.registerReceiver(new BroadcastReceiver() {
                 @Override
                 public void onReceive(Context context, Intent intent) {
-                    if (getResultCode() == Activity.RESULT_OK) sendMessage("Success:" + input[2], true);
-                    else sendMessage("Fail:" + input[2], true);
+                    if (getResultCode() == Activity.RESULT_OK) sendMessage("Success:" + intent.getAction(), true);
+                    else sendMessage("Fail:" + intent.getAction(), true);
+                    unregisterReceiver(this);
                 }
-            }, new IntentFilter("SMS_SENT"));
+            }, new IntentFilter(input[2]));
             sms.sendTextMessage(input[3], null, input[4], sentPI, null);
         }
         if (message.split(":")[1].equals("DC")) {
