@@ -1,7 +1,6 @@
 package me.johannesnz.smsim;
 
 import android.app.Activity;
-import android.app.AlarmManager;
 import android.app.IntentService;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -18,8 +17,6 @@ import android.telephony.SmsManager;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import java.util.ArrayList;
-
 import eneter.messaging.endpoints.stringmessages.DuplexStringMessagesFactory;
 import eneter.messaging.endpoints.stringmessages.IDuplexStringMessagesFactory;
 import eneter.messaging.endpoints.stringmessages.StringResponseReceivedEventArgs;
@@ -30,8 +27,6 @@ import eneter.net.system.EventHandler;
 
 public class CommService extends IntentService {
 
-    private ArrayList<String> failedMessages = new ArrayList();
-
     public CommService() {
         super("CommService");
     }
@@ -41,6 +36,7 @@ public class CommService extends IntentService {
         String data, command = intent.getStringExtra("command");
         switch (command) {
             case "connect":
+                Main.setConnected(this, true);
                 if (!setUp()) connFail("CONNECTION REFUSED");
                 break;
             case "send":
@@ -76,30 +72,26 @@ public class CommService extends IntentService {
         } catch (Exception ex) {
             return false;
         }
-        Main.setConnected(this, true);
-        Main.showNotification(this, 1, "Connected.", true);
-        AlarmManager aManager = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
-        Intent intent = new Intent(this, RetryAlarmReceiver.class);
-        PendingIntent alarmIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
-        aManager.cancel(alarmIntent);
+        Main.cancelAutoRetryAlarm(this);
+        Main.setPingAlarm(this);
+        Main.showNotification(this, "Connected.", true);
         return true;
     }
 
     private void sendMessage(String message, boolean handleFail) {
         try {
-            for (String retryMessage : failedMessages) {
-                Main.sender.sendMessage(retryMessage);
+            if (message.equals("Version")) Main.sender.sendMessage(message);
+            else {
+                int id = Main.getUniqueId(this);
+                Main.sender.sendMessage(id + ":" + message);
             }
-            Main.sender.sendMessage(message);
         } catch (Exception e) {
-            if (handleFail) {
-                failedMessages.add(message);
-                connFail("SEND FAILED");
-            }
+            if (handleFail) connFail("SEND FAILED");
         }
     }
 
     private void handleResponse(String message) {
+        Log.i("Log", message);
         Main.lastPing = System.currentTimeMillis();
         if (message.split(":")[1].equals("Ping")) {
             sendMessage("Pong", true);
@@ -107,7 +99,10 @@ public class CommService extends IntentService {
         if (message.split(":")[1].equals("Version")) {
             String version = message.split(":")[2];
             if (version.equals("1.1")) sendMessage("Conn:" + Build.MODEL, true);
-            else connFail("VERSION MISMATCH");
+            else {
+                sendMessage("Mismatch", false);
+                connFail("VERSION MISMATCH");
+            }
         }
         if (message.split(":")[1].equals("Contacts")) {
             Cursor phones = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
@@ -130,7 +125,10 @@ public class CommService extends IntentService {
                 @Override
                 public void onReceive(Context context, Intent intent) {
                     if (getResultCode() == Activity.RESULT_OK) sendMessage("Success:" + intent.getAction(), true);
-                    else sendMessage("Fail:" + intent.getAction(), true);
+                    else {
+                        sendMessage("Fail:" + intent.getAction(), true);
+                        Log.i("Log", "Failed send. Error code " + String.valueOf(getResultCode()));
+                    }
                     unregisterReceiver(this);
                 }
             }, new IntentFilter(input[2]));
@@ -142,9 +140,11 @@ public class CommService extends IntentService {
     }
 
     public void connFail(String status) {
-        if (!Main.isConnected(this)) return;
+        if (!Main.isConnected(this) || setUp()) return;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         Main.setConnected(this, false);
+        Main.cancelPingAlarm(this);
+        Log.i("Log", status);
         switch (status) {
             case "QUIT":
                 sendMessage("DC", false);
@@ -153,26 +153,17 @@ public class CommService extends IntentService {
             case "SEND FAILED":
             case "PING TIMEOUT":
             case "REMOTE DISCONNECT":
-                Main.showNotification(this, 1, "Connection lost.", false);
-                if (prefs.getBoolean("autoRetry", false)) retryLoop();
+                Main.showNotification(this, "Connection lost.", false);
+                if (prefs.getBoolean("autoRetry", false)) Main.setAutoRetryAlarm(this);
                 break;
             case "CONNECTION REFUSED":
-                Main.showNotification(this, 1, "Connection refused. Ensure PC client is running and check the IP address.", false);
-                if (prefs.getBoolean("autoRetry", false)) retryLoop();
+                Main.showNotification(this, "Connection refused.", false);
+                if (prefs.getBoolean("autoRetry", false)) Main.setAutoRetryAlarm(this);
                 break;
             case "VERSION MISMATCH":
-                Main.showNotification(this, 1, "PC client is outdated - please download the latest version.", false);
+                Main.showNotification(this, "PC client out of date.", false);
                 break;
         }
-    }
-
-    private synchronized void retryLoop() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        AlarmManager aManager = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
-        Intent intent = new Intent(this, RetryAlarmReceiver.class);
-        PendingIntent alarmIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
-        int interval = Integer.parseInt(prefs.getString("autoRetryInterval", "300")) * 1000;
-        aManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, interval, interval, alarmIntent);
     }
 
 }

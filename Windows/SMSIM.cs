@@ -47,7 +47,7 @@ namespace SMSIM {
             this.ActiveControl = label1;
             System.Timers.Timer pingTimer = new System.Timers.Timer();
             pingTimer.Elapsed += new ElapsedEventHandler(pingTimeout);
-            pingTimer.Interval = 1000 * 60 * 10;
+            pingTimer.Interval = 1000 * 30;
             pingTimer.Enabled = true;
         }
 
@@ -68,60 +68,78 @@ namespace SMSIM {
                 connectedDevice = e.ResponseReceiverId;
                 sendMessage("Version:1.1");
                 connectedDevice = null;
+                return;
             }
-            if (input[0].Equals("Conn")) {
-                connectedDevice = e.ResponseReceiverId;
-                deviceName.Invoke(new MethodInvoker(delegate { deviceName.Text = input[1]; }));
-                contacts.Invoke(new MethodInvoker(delegate { contacts.Items.Clear(); }));
-                sendMessage("Contacts");
-            }
-            if (input[0].Equals("Contact")) {
-                Contact contact = new Contact();
-                contact.name = input[1];
-                contact.number = input[2];
-                foreach (Contact existingContact in contacts.Items) {
-                    if (existingContact.name.Equals(contact.name) && existingContact.number.Equals(contact.number)) return;
-                }
-                System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
-                Array lol = assembly.GetManifestResourceNames();
-                Stream stream = assembly.GetManifestResourceStream("SMSIM.Contacts-50.png");
-                contact.displayPic = new Bitmap(stream);
-                contacts.Invoke(new MethodInvoker(delegate { contacts.Items.Add(contact); contacts.Sorted = false; contacts.Sorted = true; }));
-            }
-            if (input[0].Equals("SMS")) {
-                SystemSounds.Beep.Play();
-                if (openConversations.ContainsKey(input[1])) {
-                    Conversation conversation;
-                    if (openConversations.TryGetValue(input[1], out conversation)) {
-                        if (conversation.InvokeRequired) conversation.Invoke(new MethodInvoker(delegate { conversation.ParseInput(input); }));
-                        else conversation.ParseInput(input);
+            try {
+                receiver.SendResponseMessage(e.ResponseReceiverId, "Ack:" + input[0]);
+            } catch (InvalidOperationException) { input[1] = "DC"; }
+            switch (input[1]) {
+                case ("Mismatch"):
+                    var result = MessageBox.Show("An update is required. Would you like to download it now?",
+                        "Update required", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                    if (result == DialogResult.Yes) System.Diagnostics.Process.Start("http://github.com/JMdeKlerk/SMSIM/releases");
+                    break;
+                case ("Conn"):
+                    connectedDevice = e.ResponseReceiverId;
+                    deviceName.Invoke(new MethodInvoker(delegate { deviceName.Text = input[2]; }));
+                    contacts.Invoke(new MethodInvoker(delegate { contacts.Items.Clear(); }));
+                    sendMessage("Contacts");
+                    break;
+                case ("Contact"):
+                    Contact contact = new Contact();
+                    contact.name = input[2];
+                    contact.number = input[3];
+                    foreach (Contact existingContact in contacts.Items) {
+                        if (existingContact.name.Equals(contact.name) && existingContact.number.Equals(contact.number)) return;
                     }
-                } else {
-                    BackgroundWorker bw = new BackgroundWorker();
-                    bw.DoWork += new DoWorkEventHandler(delegate (object o, DoWorkEventArgs args) {
-                        Conversation conversation = new Conversation(this, input);
-                        openConversations.Add(input[1], conversation);
-                        Application.Run(conversation);
-                    });
-                    bw.RunWorkerAsync();
-                }
-            }
-            if (input[0].Equals("Success")) {
-                foreach (KeyValuePair<string, Conversation> entry in openConversations) {
-                    int id = Int32.Parse(input[1]);
-                    entry.Value.messageSuccess(id);
-                }
-            }
-            if (input[0].Equals("Fail")) {
-                foreach (KeyValuePair<string, Conversation> entry in openConversations) {
-                    int id = Int32.Parse(input[1]);
-                    entry.Value.messageFail(id);
-                }
-            }
-            if (input[0].Equals("DC")) {
-                connectedDevice = null;
-                deviceName.Invoke(new MethodInvoker(delegate { deviceName.Text = "-"; }));
-                contacts.Invoke(new MethodInvoker(delegate { contacts.Items.Clear(); }));
+                    System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
+                    Array lol = assembly.GetManifestResourceNames();
+                    Stream stream = assembly.GetManifestResourceStream("SMSIM.Contacts-50.png");
+                    contact.displayPic = new Bitmap(stream);
+                    contacts.Invoke(new MethodInvoker(delegate {
+                        contacts.Items.Add(contact);
+                        contacts.Sorted = false;
+                        contacts.Sorted = true;
+                    }));
+                    break;
+                case ("SMS"):
+                    SystemSounds.Beep.Play();
+                    if (openConversations.ContainsKey(input[2])) {
+                        Conversation conversation;
+                        if (openConversations.TryGetValue(input[2], out conversation)) {
+                            if (conversation.InvokeRequired)
+                                conversation.Invoke(new MethodInvoker(delegate {
+                                    conversation.ParseInput(input);
+                                }));
+                            else conversation.ParseInput(input);
+                        }
+                    } else {
+                        BackgroundWorker bw = new BackgroundWorker();
+                        bw.DoWork += new DoWorkEventHandler(delegate (object o, DoWorkEventArgs args) {
+                            Conversation conversation = new Conversation(this, input);
+                            openConversations.Add(input[2], conversation);
+                            Application.Run(conversation);
+                        });
+                        bw.RunWorkerAsync();
+                    }
+                    break;
+                case ("Success"):
+                    foreach (KeyValuePair<string, Conversation> entry in openConversations) {
+                        int id = Int32.Parse(input[2]);
+                        entry.Value.messageSuccess(id);
+                    }
+                    break;
+                case ("Fail"):
+                    foreach (KeyValuePair<string, Conversation> entry in openConversations) {
+                        int id = Int32.Parse(input[2]);
+                        entry.Value.messageFail(id);
+                    }
+                    break;
+                case ("DC"):
+                    connectedDevice = null;
+                    deviceName.Invoke(new MethodInvoker(delegate { deviceName.Text = "-"; }));
+                    contacts.Invoke(new MethodInvoker(delegate { contacts.Items.Clear(); }));
+                    break;
             }
         }
 
@@ -145,7 +163,7 @@ namespace SMSIM {
                     else conversation.Focus();
                 }
             } else {
-                String[] input = { "null", selected.name, selected.number };
+                String[] input = { "null", "null", selected.name, selected.number };
                 Conversation conversation = new Conversation(this, input);
                 openConversations.Add(selected.name, conversation);
                 conversation.Show();
@@ -165,7 +183,8 @@ namespace SMSIM {
 
         private void SMSIM_FormClosing(object sender, FormClosingEventArgs e) {
             if (connectedDevice != null) {
-                var result = MessageBox.Show("A device is currently connected. Are you sure you wish to quit?", "Confirm Quit", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                var result = MessageBox.Show("A device is currently connected. Are you sure you wish to quit?",
+                    "Confirm quit", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 if (result == DialogResult.No) e.Cancel = true;
                 else {
                     sendMessage("DC");

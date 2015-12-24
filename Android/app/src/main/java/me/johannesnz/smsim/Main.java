@@ -7,6 +7,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.os.Bundle;
 import android.content.Intent;
+import android.os.SystemClock;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
@@ -90,11 +91,6 @@ public class Main extends AppCompatActivity implements OnSharedPreferenceChangeL
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        AlarmManager aManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        Intent intent = new Intent(this, PingAlarmReceiver.class);
-        PendingIntent alarmIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
-        aManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, AlarmManager.INTERVAL_FIFTEEN_MINUTES,
-                AlarmManager.INTERVAL_FIFTEEN_MINUTES, alarmIntent);
         getFragmentManager().beginTransaction().replace(android.R.id.content, new SettingsFragment()).commit();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         prefs.registerOnSharedPreferenceChangeListener(this);
@@ -133,7 +129,16 @@ public class Main extends AppCompatActivity implements OnSharedPreferenceChangeL
         prefsEdit.commit();
     }
 
-    public static void showNotification(Context context, int id, String message, boolean onGoing) {
+    public static synchronized int getUniqueId(Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor prefsEdit = prefs.edit();
+        int id = prefs.getInt("uniqueId", 0) + 1;
+        if (id > 999) id = 1;
+        prefsEdit.putInt("uniqueId", id).commit();
+        return id;
+    }
+
+    public static void showNotification(Context context, String message, boolean onGoing) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         if (!prefs.getBoolean("hideNotifications", false)) {
             NotificationCompat.Builder notification = new NotificationCompat.Builder(context);
@@ -142,14 +147,52 @@ public class Main extends AppCompatActivity implements OnSharedPreferenceChangeL
             if (isConnected(context)) notification.setSmallIcon(R.mipmap.ic_launcher);
             else notification.setSmallIcon(R.mipmap.ic_notification_bad);
             notification.setOngoing(onGoing);
+            if (message.startsWith("PC Client")) {
+                Intent intent = new Intent(context, Main.class);
+                intent.setAction("outOfDateAlert");
+                PendingIntent pi = PendingIntent.getActivity(context, 0, intent, 0);
+                notification.setContentIntent(pi);
+            }
             NotificationManager nManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-            nManager.notify(id, notification.build());
+            nManager.notify(1, notification.build());
         }
+    }
+
+    public static void setPingAlarm(Context context) {
+        AlarmManager aManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(context, PingAlarmReceiver.class);
+        PendingIntent alarmIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
+        aManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, 60 * 1000, 60 * 1000, alarmIntent);
+    }
+
+    public static void cancelPingAlarm(Context context) {
+        AlarmManager aManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(context, PingAlarmReceiver.class);
+        PendingIntent alarmIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
+        aManager.cancel(alarmIntent);
+    }
+
+    public static void setAutoRetryAlarm(Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        AlarmManager aManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(context, RetryAlarmReceiver.class);
+        PendingIntent alarmIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
+        int interval = Integer.parseInt(prefs.getString("autoRetryInterval", "300")) * 1000;
+        aManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + interval, interval, alarmIntent);
+    }
+
+    public static void cancelAutoRetryAlarm(Context context) {
+        AlarmManager aManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(context, RetryAlarmReceiver.class);
+        PendingIntent alarmIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
+        aManager.cancel(alarmIntent);
     }
 
     @Override
     protected void onDestroy() {
         disconnect(this, "QUIT");
+        cancelPingAlarm(this);
+        cancelAutoRetryAlarm(this);
         SharedPreferences.Editor prefsEdit = PreferenceManager.getDefaultSharedPreferences(this).edit();
         prefsEdit.putBoolean("connected", false);
         prefsEdit.putBoolean("retryInProgress", false);

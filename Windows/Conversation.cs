@@ -20,17 +20,17 @@ namespace SMSIM {
         public Conversation(SMSIM parent, string[] input) {
             InitializeComponent();
             this.parent = parent;
-            this.name = input[1];
-            this.number = input[2];
+            this.name = input[2];
+            this.number = input[3];
             ParseInput(input);
         }
 
         public void ParseInput(string[] input) {
-            this.Text = input[1] + " (" + input[2] + ")";
-            if (input.Length > 3) {
+            this.Text = input[2] + " (" + input[3] + ")";
+            if (input.Length > 4) {
                 string timestamp = "[" + DateTime.Now.ToString("HH:mm:ss") + "] ";
-                messageBox.AppendText(timestamp + input[1] + ": ");
-                for (int i = 3; i < input.Length; i++) {
+                messageBox.AppendText(timestamp + input[2] + ": ");
+                for (int i = 4; i < input.Length; i++) {
                     messageBox.AppendText(input[i]);
                     if (i < input.Length - 1) messageBox.AppendText(":");
                 }
