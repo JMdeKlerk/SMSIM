@@ -48,7 +48,7 @@ namespace SMSIM {
                 messageBox.AppendText(timestamp + "You: " + message + "\n");
                 messageBox.ScrollToCaret();
                 messageBox.Select(startIndex, length);
-                messageBox.SelectionFont = new System.Drawing.Font("Sans Serif", 8, FontStyle.Italic);
+                messageBox.SelectionColor = Color.Gray;
             }));
             PendingMessage pendingMessage = new PendingMessage();
             pendingMessage.id = id;
@@ -63,7 +63,7 @@ namespace SMSIM {
                 if (pendingMessage.id == id) {
                     this.Invoke(new MethodInvoker(delegate {
                         messageBox.Select(pendingMessage.startIndex, pendingMessage.length);
-                        messageBox.SelectionFont = new System.Drawing.Font("Sans Serif", 8);
+                        messageBox.SelectionColor = Color.Black;
                     }));
                     pendingMessages.Remove(pendingMessage);
                     break;
@@ -76,7 +76,6 @@ namespace SMSIM {
                 if (pendingMessage.id == id) {
                     this.Invoke(new MethodInvoker(delegate {
                         messageBox.Select(pendingMessage.startIndex, pendingMessage.length);
-                        messageBox.SelectionFont = new System.Drawing.Font("Sans Serif", 8);
                         messageBox.SelectionColor = Color.Red;
                     }));
                     pendingMessages.Remove(pendingMessage);

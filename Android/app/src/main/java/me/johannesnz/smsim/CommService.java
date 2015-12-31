@@ -41,7 +41,8 @@ public class CommService extends IntentService {
                 break;
             case "send":
                 data = intent.getStringExtra("data");
-                sendMessage(data, true);
+                int id = intent.getIntExtra("forceId", 0);
+                sendMessage(data, true, id);
                 break;
             case "disconnect":
                 data = intent.getStringExtra("data");
@@ -90,12 +91,19 @@ public class CommService extends IntentService {
         }
     }
 
+    private void sendMessage(String message, boolean handleFail, int forceId) {
+        try {
+            Main.sender.sendMessage(forceId + ":" + message);
+        } catch (Exception e) {
+            if (handleFail) connFail("SEND FAILED");
+        }
+    }
+
     private void handleResponse(String message) {
         Log.i("Log", message);
         Main.lastPing = System.currentTimeMillis();
-        if (message.split(":")[1].equals("Ping")) {
-            sendMessage("Pong", true);
-        }
+        if (message.split(":")[0].equals("Ack")) Main.pendingMessages.set(Integer.parseInt(message.split(":")[1]), null);
+        if (message.split(":")[1].equals("Ping")) sendMessage("Pong", true);
         if (message.split(":")[1].equals("Version")) {
             String version = message.split(":")[2];
             if (version.equals("1.1")) sendMessage("Conn:" + Build.MODEL, true);
@@ -153,11 +161,8 @@ public class CommService extends IntentService {
             case "SEND FAILED":
             case "PING TIMEOUT":
             case "REMOTE DISCONNECT":
-                Main.showNotification(this, "Connection lost.", false);
-                if (prefs.getBoolean("autoRetry", false)) Main.setAutoRetryAlarm(this);
-                break;
             case "CONNECTION REFUSED":
-                Main.showNotification(this, "Connection refused.", false);
+                Main.showNotification(this, "Connection failed.", false);
                 if (prefs.getBoolean("autoRetry", false)) Main.setAutoRetryAlarm(this);
                 break;
             case "VERSION MISMATCH":

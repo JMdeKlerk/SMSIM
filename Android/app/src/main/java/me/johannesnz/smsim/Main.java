@@ -22,12 +22,15 @@ import com.android.vending.util.IabHelper;
 import com.android.vending.util.IabResult;
 import com.android.vending.util.Purchase;
 
+import java.util.ArrayList;
+
 import eneter.messaging.endpoints.stringmessages.IDuplexStringMessageSender;
 
 public class Main extends AppCompatActivity implements OnSharedPreferenceChangeListener {
 
     public static long lastPing;
     public static volatile IDuplexStringMessageSender sender;
+    public static ArrayList<Intent> pendingMessages = new ArrayList<>();
 
     public static class SettingsFragment extends PreferenceFragment implements OnPreferenceClickListener {
 
@@ -91,6 +94,8 @@ public class Main extends AppCompatActivity implements OnSharedPreferenceChangeL
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        pendingMessages.ensureCapacity(100);
+        while (pendingMessages.size() < 100) pendingMessages.add(null);
         getFragmentManager().beginTransaction().replace(android.R.id.content, new SettingsFragment()).commit();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         prefs.registerOnSharedPreferenceChangeListener(this);
@@ -104,9 +109,12 @@ public class Main extends AppCompatActivity implements OnSharedPreferenceChangeL
         context.startService(intent);
     }
 
-    public static void sendMessage(Context context, String message) {
+    public static void sendMessageAndStoreIntent(Context context, String message, Intent storeable) {
+        int id = getUniqueId(context);
+        pendingMessages.add(id, storeable);
         Intent intent = new Intent(context, CommService.class);
         intent.putExtra("command", "send");
+        intent.putExtra("forceId", id);
         intent.putExtra("data", message);
         context.startService(intent);
     }
@@ -133,7 +141,7 @@ public class Main extends AppCompatActivity implements OnSharedPreferenceChangeL
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor prefsEdit = prefs.edit();
         int id = prefs.getInt("uniqueId", 0) + 1;
-        if (id > 999) id = 1;
+        if (id > 99) id = 1;
         prefsEdit.putInt("uniqueId", id).commit();
         return id;
     }

@@ -18,6 +18,7 @@ namespace SMSIM {
     public partial class SMSIM : Form {
 
         private static int id = 0;
+        private static Object threadLock = new Object();
         private IDuplexStringMessageReceiver receiver;
         private String connectedDevice;
         private bool ping = false;
@@ -52,12 +53,16 @@ namespace SMSIM {
         }
 
         public Boolean sendMessage(String message) {
-            try {
-                message = Interlocked.Increment(ref id).ToString() + ":" + message;
-                receiver.SendResponseMessage(connectedDevice, message);
-                return true;
-            } catch (InvalidOperationException) {
-                return false;
+            lock(threadLock) {
+                try {
+                    int messageId = id++;
+                    if (id > 99) id = 0;
+                    message = messageId + ":" + message;
+                    receiver.SendResponseMessage(connectedDevice, message);
+                    return true;
+                } catch (InvalidOperationException) {
+                    return false;
+                }
             }
         }
 
