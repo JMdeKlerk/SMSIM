@@ -103,6 +103,17 @@ public class Main extends AppCompatActivity implements OnSharedPreferenceChangeL
         super.onCreate(savedInstanceState);
     }
 
+    @Override
+    protected void onResume() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        if (prefs.getBoolean("showVersionMismatchDialog", true)) {
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putBoolean("showVersionMismatchDialog", false).commit();
+            showVersionMismatchDialog(this);
+        }
+        super.onResume();
+    }
+
     public static void connect(Context context) {
         Intent intent = new Intent(context, CommService.class);
         intent.putExtra("command", "connect");
@@ -146,24 +157,25 @@ public class Main extends AppCompatActivity implements OnSharedPreferenceChangeL
         return id;
     }
 
-    public static void showNotification(Context context, String message, boolean onGoing) {
+    public static void showNotification(Context context, String message, String ticker, boolean onGoing) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         if (!prefs.getBoolean("hideNotifications", false)) {
             NotificationCompat.Builder notification = new NotificationCompat.Builder(context);
             notification.setContentTitle("SMS Messenger");
             notification.setContentText(message);
+            if (ticker != null) notification.setTicker(ticker);
             if (isConnected(context)) notification.setSmallIcon(R.mipmap.ic_launcher);
             else notification.setSmallIcon(R.mipmap.ic_notification_bad);
             notification.setOngoing(onGoing);
-            if (message.startsWith("PC Client")) {
-                Intent intent = new Intent(context, Main.class);
-                intent.setAction("outOfDateAlert");
-                PendingIntent pi = PendingIntent.getActivity(context, 0, intent, 0);
-                notification.setContentIntent(pi);
-            }
             NotificationManager nManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
             nManager.notify(1, notification.build());
         }
+    }
+
+    public static void showVersionMismatchDialog(Context context) {
+        Intent intent = new Intent(context, VersionMismatch.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(intent);
     }
 
     public static void setPingAlarm(Context context) {
@@ -204,6 +216,7 @@ public class Main extends AppCompatActivity implements OnSharedPreferenceChangeL
         SharedPreferences.Editor prefsEdit = PreferenceManager.getDefaultSharedPreferences(this).edit();
         prefsEdit.putBoolean("connected", false);
         prefsEdit.putBoolean("retryInProgress", false);
+        prefsEdit.putBoolean("showVersionMismatchDialog", false);
         prefsEdit.commit();
         NotificationManager nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         nManager.cancelAll();

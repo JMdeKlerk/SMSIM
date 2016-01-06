@@ -28,6 +28,12 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".VersionMismatch"
+            android:launchMode="singleTop"
+            android:noHistory="true"
+            android:theme="@style/Theme.AppCompat.Light.Dialog"/>
+
         <service
             android:name=".CommService"
             android:enabled="true">

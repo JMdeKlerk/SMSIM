@@ -75,7 +75,7 @@ public class CommService extends IntentService {
         }
         Main.cancelAutoRetryAlarm(this);
         Main.setPingAlarm(this);
-        Main.showNotification(this, "Connected.", true);
+        Main.showNotification(this, "Connected.", null, true);
         return true;
     }
 
@@ -106,7 +106,12 @@ public class CommService extends IntentService {
         if (message.split(":")[1].equals("Ping")) sendMessage("Pong", true);
         if (message.split(":")[1].equals("Version")) {
             String version = message.split(":")[2];
-            if (version.equals("1.1")) sendMessage("Conn:" + Build.MODEL, true);
+            if (version.equals("1.1")) {
+                sendMessage("Conn:" + Build.MODEL, true);
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+                SharedPreferences.Editor editor = prefs.edit();
+                editor.putBoolean("showVersionMismatchDialog", false).commit();
+            }
             else {
                 sendMessage("Mismatch", false);
                 connFail("VERSION MISMATCH");
@@ -148,7 +153,7 @@ public class CommService extends IntentService {
     }
 
     public void connFail(String status) {
-        if (!Main.isConnected(this) || setUp()) return;
+        if (!Main.isConnected(this) || (!status.equals("VERSION MISMATCH") && setUp())) return;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         Main.setConnected(this, false);
         Main.cancelPingAlarm(this);
@@ -162,11 +167,14 @@ public class CommService extends IntentService {
             case "PING TIMEOUT":
             case "REMOTE DISCONNECT":
             case "CONNECTION REFUSED":
-                Main.showNotification(this, "Connection failed.", false);
+                Main.showNotification(this, "Connection failed.", "Connection to remote host failed.", false);
                 if (prefs.getBoolean("autoRetry", false)) Main.setAutoRetryAlarm(this);
                 break;
             case "VERSION MISMATCH":
-                Main.showNotification(this, "PC client out of date.", false);
+                Main.showNotification(this, "PC client out of date.", "Connection failed - your PC client needs updating.", false);
+                Main.showVersionMismatchDialog(getBaseContext());
+                SharedPreferences.Editor editor = prefs.edit();
+                editor.putBoolean("showVersionMismatchDialog", true).commit();
                 break;
         }
     }
