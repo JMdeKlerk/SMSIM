@@ -106,7 +106,7 @@ public class Main extends AppCompatActivity implements OnSharedPreferenceChangeL
     @Override
     protected void onResume() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        if (prefs.getBoolean("showVersionMismatchDialog", true)) {
+        if (prefs.getBoolean("showVersionMismatchDialog", false)) {
             SharedPreferences.Editor editor = prefs.edit();
             editor.putBoolean("showVersionMismatchDialog", false).commit();
             showVersionMismatchDialog(this);
